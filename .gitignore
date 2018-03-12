@@ -1,3 +1,17 @@
+# MDK-ARM files
+MDK-ARM/brushless_motor
+MDK-ARM/DebugConfig
+MDK-ARM/RTE
+MDK-ARM/*.lst
+*.ярослав
+*.Yaroslav
+*.Ilya
+*.scvd
+*.mxproject
+*.Hydronautics
+*(2).*
+*.fix_comp_win10
+*.cpdsc
 # Prerequisites
 *.d
 
@@ -50,3 +64,5 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+
