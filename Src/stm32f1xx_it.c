@@ -210,8 +210,7 @@ void SysTick_Handler(void)
           update_velocity(&BLDC, uart_buf[1]);          
         }
         else if(uart_buf[0] == 0x02){
-          //set_emf_state(&BLDC, uart_buf[1]);
-          BLDC.emf_state = uart_buf[1];
+          set_emf_state(&BLDC, uart_buf[1]);
           commute(&BLDC, uart_buf[1]);
         }
       }
@@ -220,10 +219,11 @@ void SysTick_Handler(void)
       package_started = false;
      }
   }
-  set_emf_state(&BLDC, read_gray_code());
-  commute(&BLDC, BLDC.emf_state);
-  //    HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
-    
+  //  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
+
+    update_emf_state(&BLDC);  
+    commute(&BLDC, BLDC.emf_state);
+  
   if (led_counter == 250){
     HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
     led_counter = 0;
@@ -370,13 +370,35 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     __HAL_TIM_SET_COUNTER(htim, 0);
     
     
+    
     set_emf_state(&BLDC, read_gray_code());
     
     commute(&BLDC, BLDC.emf_state);
-
     BLDC.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
-    BLDC.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_3);
-    BLDC.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_4);
+    BLDC.phase_b_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_3);
+    BLDC.phase_c_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_4);
+    
+    switch (htim->Channel){
+      case HAL_TIM_ACTIVE_CHANNEL_1:
+      break;
+      
+      case HAL_TIM_ACTIVE_CHANNEL_2:
+        BLDC.ticks_for_next_commute = BLDC.phase_a_tick/2;
+      break;
+      
+      case HAL_TIM_ACTIVE_CHANNEL_3:
+        BLDC.ticks_for_next_commute = BLDC.phase_b_tick/2;        
+      break;
+      
+      case HAL_TIM_ACTIVE_CHANNEL_4:
+        BLDC.ticks_for_next_commute = BLDC.phase_c_tick/2;        
+      break;
+      
+      case HAL_TIM_ACTIVE_CHANNEL_CLEARED:
+        
+      break;
+      
+    }
   }
 }
 
@@ -385,6 +407,24 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	if(huart == &huart1){
 		HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
 	}
+}
+
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
+{
+//  if (htim == &htim3){
+//    if (BLDC.control_mode == fan_mode){
+//      static uint16_t fan_mode_counter = 0;
+//      ++fan_mode_counter;
+//      if (fan_mode_counter == 1000){
+//      }
+//    }
+//    else if (BLDC.control_mode == emf_mode){
+//      
+//      
+//    }
+//    update_emf_state(&BLDC);
+//    commute(&BLDC, BLDC.emf_state);    
+//  }
 }
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

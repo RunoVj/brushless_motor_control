@@ -113,7 +113,7 @@ int main(void)
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);   // phase C
 
 
-  set_emf_state(&BLDC, read_gray_code());
+  update_emf_state(&BLDC);
   commute(&BLDC, BLDC.emf_state);
 
 //  HAL_ADC_Start_IT(&hadc1);

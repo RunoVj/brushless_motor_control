@@ -8,6 +8,7 @@
 
 typedef enum { fan_mode, emf_mode } ControlMode;
 typedef enum { clockwise, counterclockwise } RotationDir;
+typedef enum { A, B, C} Phase;
 
 typedef struct {
   ControlMode control_mode;
@@ -22,23 +23,23 @@ typedef struct {
   uint16_t phase_a_tick;
   uint16_t phase_b_tick;
   uint16_t phase_c_tick;
+  
+  uint16_t ticks_for_next_commute;
+  
 } BrushlessMotor;
 
 extern BrushlessMotor BLDC;
 
-uint8_t get_hall_state(uint8_t gray_code);
 uint8_t read_gray_code(void);
-
-
-typedef enum { A, B, C} Phase;
-typedef enum { direct, reverse } Polarity; 
-void set_pwm_polarity(Phase phase, Polarity polarity);
 
 void commute(BrushlessMotor* BLDC, uint8_t state);
 void update_pwm_duty(Phase phase, uint16_t duty);
 
-void set_emf_state(BrushlessMotor* BLDC, uint8_t gray_code);
+void set_emf_state(BrushlessMotor* BLDC, uint8_t state);
+void set_next_emf_state(BrushlessMotor* BLDC);
+
+void update_emf_state(BrushlessMotor* BLDC);
 void update_velocity(BrushlessMotor* BLDC, uint8_t velocity);
-uint8_t get_next_state(BrushlessMotor* BLDC);
+uint8_t get_next_state(BrushlessMotor* BLDC, uint8_t gray_code);
 
 #endif /*__brushless_motor_H */
