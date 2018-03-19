@@ -117,20 +117,27 @@ uint8_t read_gray_code()
 void set_emf_state(BrushlessMotor* BLDC, uint8_t state)
 {
   BLDC->emf_state = state;
-//  uint8_t buf[2];
-//  buf[0] = 0xAA;
-//  buf[1] = state;
-//  transmit_package_dma(buf, 2);
 }
 
 void update_emf_state(BrushlessMotor* BLDC)
 {
-  BLDC->emf_state = get_next_state(BLDC, read_gray_code());
+  set_emf_state(BLDC, get_next_state(BLDC, read_gray_code()));
 }
 
 void set_next_emf_state(BrushlessMotor* BLDC)
 {
-   uint8_t cur_state = BLDC->emf_state;
+  uint8_t state = BLDC->emf_state;
+  if (BLDC->rotation_dir == clockwise){
+    state = state % 6 + 1;
+  }
+  else{
+    state -= 1;
+    if (state <= 0){
+       state = 6;
+    }
+  }
+
+  set_emf_state(BLDC, state);
 }
 
 void update_velocity(BrushlessMotor* BLDC, uint8_t velocity)
@@ -174,6 +181,5 @@ uint8_t get_next_state(BrushlessMotor* BLDC, uint8_t gray_code)
       case 3: return 5;	
       default : return 0;
     }    
-  }
-  
+  } 
 }

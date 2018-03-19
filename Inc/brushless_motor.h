@@ -14,17 +14,23 @@ typedef struct {
   ControlMode control_mode;
   RotationDir rotation_dir;
   
+  bool started;
+  
   uint8_t velocity;
   uint16_t pwm_duty;
   uint8_t emf_state;
   
   uint16_t current;
   
+  uint16_t fan_mode_commutation_period;
+  bool fan_mode_enable;
+  
   uint16_t phase_a_tick;
   uint16_t phase_b_tick;
   uint16_t phase_c_tick;
   
   uint16_t ticks_for_next_commute;
+  uint32_t ticks_threshold;
   
 } BrushlessMotor;
 

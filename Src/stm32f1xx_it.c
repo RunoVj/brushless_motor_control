@@ -210,8 +210,14 @@ void SysTick_Handler(void)
           update_velocity(&BLDC, uart_buf[1]);          
         }
         else if(uart_buf[0] == 0x02){
+          BLDC.fan_mode_enable = false;
           set_emf_state(&BLDC, uart_buf[1]);
           commute(&BLDC, uart_buf[1]);
+        }
+        else if(uart_buf[0] == 0x03){
+          BLDC.fan_mode_enable = true;
+          BLDC.fan_mode_commutation_period = uart_buf[1];
+          BLDC.fan_mode_commutation_period *= 2;
         }
       }
       rx_counter = 0;
@@ -220,9 +226,6 @@ void SysTick_Handler(void)
      }
   }
   //  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
-
-    update_emf_state(&BLDC);  
-    commute(&BLDC, BLDC.emf_state);
   
   if (led_counter == 250){
     HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
@@ -370,10 +373,18 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     __HAL_TIM_SET_COUNTER(htim, 0);
     
     
+    static uint32_t start_filter_counter = 0;
     
-    set_emf_state(&BLDC, read_gray_code());
+    if (!BLDC.started){
+      start_filter_counter++;
+    }
     
-    commute(&BLDC, BLDC.emf_state);
+    if (start_filter_counter == 10){
+      BLDC.started = true;
+      BLDC.control_mode = emf_mode;
+      start_filter_counter = 0;
+    }
+    
     BLDC.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
     BLDC.phase_b_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_3);
     BLDC.phase_c_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_4);
@@ -384,20 +395,21 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
       
       case HAL_TIM_ACTIVE_CHANNEL_2:
         BLDC.ticks_for_next_commute = BLDC.phase_a_tick/2;
+        BLDC.ticks_threshold = BLDC.phase_a_tick*8;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_3:
-        BLDC.ticks_for_next_commute = BLDC.phase_b_tick/2;        
+        BLDC.ticks_for_next_commute = BLDC.phase_b_tick/2;
+        BLDC.ticks_threshold = BLDC.phase_b_tick*8;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_4:
-        BLDC.ticks_for_next_commute = BLDC.phase_c_tick/2;        
+        BLDC.ticks_for_next_commute = BLDC.phase_c_tick/2;
+        BLDC.ticks_threshold = BLDC.phase_c_tick*8;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_CLEARED:
-        
-      break;
-      
+      break;      
     }
   }
 }
@@ -411,20 +423,34 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
-//  if (htim == &htim3){
-//    if (BLDC.control_mode == fan_mode){
-//      static uint16_t fan_mode_counter = 0;
-//      ++fan_mode_counter;
-//      if (fan_mode_counter == 1000){
-//      }
-//    }
-//    else if (BLDC.control_mode == emf_mode){
-//      
-//      
-//    }
-//    update_emf_state(&BLDC);
-//    commute(&BLDC, BLDC.emf_state);    
-//  }
+  if (htim == &htim3){
+    
+//    if (BLDC.control_mode == fan_mode && BLDC.fan_mode_enable){
+      static uint16_t fan_mode_counter = 0;
+      ++fan_mode_counter;
+     
+      if (fan_mode_counter >= BLDC.fan_mode_commutation_period){
+        fan_mode_counter = 0;
+        set_next_emf_state(&BLDC);
+        commute(&BLDC, BLDC.emf_state);
+      }
+////    }
+//  
+    else if (BLDC.control_mode == emf_mode){
+      BLDC.ticks_for_next_commute--;
+      BLDC.ticks_threshold--;
+      
+      if (BLDC.ticks_for_next_commute == 0){
+        update_emf_state(&BLDC);
+        set_next_emf_state(&BLDC);
+        commute(&BLDC, BLDC.emf_state);
+      }
+      else if (BLDC.ticks_threshold == 0){
+        BLDC.control_mode = fan_mode;
+        BLDC.started = false;
+      }
+    }   
+  }
 }
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
