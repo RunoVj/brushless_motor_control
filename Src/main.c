@@ -105,7 +105,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);  // phase A
-  HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_2);  // phase B
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);  // phase B
   HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_1);  // phase C
 
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2);   // phase A

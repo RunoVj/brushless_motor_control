@@ -227,10 +227,10 @@ void SysTick_Handler(void)
   }
   //  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
   
-  if (led_counter == 250){
-    HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
-    led_counter = 0;
-  }
+//  if (led_counter == 250){
+//    HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
+//    led_counter = 0;
+//  }
   
   ++led_counter;
   
@@ -379,7 +379,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
       start_filter_counter++;
     }
     
-    if (start_filter_counter == 10){
+    if (start_filter_counter == 6){
       BLDC.started = true;
       BLDC.control_mode = emf_mode;
       start_filter_counter = 0;
@@ -395,17 +395,17 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
       
       case HAL_TIM_ACTIVE_CHANNEL_2:
         BLDC.ticks_for_next_commute = BLDC.phase_a_tick/2;
-        BLDC.ticks_threshold = BLDC.phase_a_tick*8;
+        BLDC.ticks_threshold = BLDC.phase_a_tick*6;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_3:
         BLDC.ticks_for_next_commute = BLDC.phase_b_tick/2;
-        BLDC.ticks_threshold = BLDC.phase_b_tick*8;
+        BLDC.ticks_threshold = BLDC.phase_b_tick*6;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_4:
         BLDC.ticks_for_next_commute = BLDC.phase_c_tick/2;
-        BLDC.ticks_threshold = BLDC.phase_c_tick*8;
+        BLDC.ticks_threshold = BLDC.phase_c_tick*6;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_CLEARED:
@@ -423,9 +423,10 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
+  HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
   if (htim == &htim3){
     
-//    if (BLDC.control_mode == fan_mode && BLDC.fan_mode_enable){
+    if (BLDC.control_mode == fan_mode && BLDC.fan_mode_enable){
       static uint16_t fan_mode_counter = 0;
       ++fan_mode_counter;
      
@@ -434,8 +435,8 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
         set_next_emf_state(&BLDC);
         commute(&BLDC, BLDC.emf_state);
       }
-////    }
-//  
+    }
+    
     else if (BLDC.control_mode == emf_mode){
       BLDC.ticks_for_next_commute--;
       BLDC.ticks_threshold--;

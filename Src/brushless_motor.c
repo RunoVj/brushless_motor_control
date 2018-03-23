@@ -128,12 +128,65 @@ void set_next_emf_state(BrushlessMotor* BLDC)
 {
   uint8_t state = BLDC->emf_state;
   if (BLDC->rotation_dir == clockwise){
-    state = state % 6 + 1;
+    switch(state){
+      case 0:
+        state = 1;
+      break;
+      
+      case 1:
+        state = 2;
+      break;
+ 
+      case 2:
+        state = 3;
+      break;
+      
+      case 3:
+        state = 4;
+      break;
+ 
+      case 4:
+        state = 5;
+      break;
+      
+      case 5:
+        state = 6;
+      break;
+ 
+      case 6:
+        state = 1;
+      break;    
+    }
   }
   else{
-    state -= 1;
-    if (state <= 0){
-       state = 6;
+    switch(state){
+      case 0:
+        state = 6;
+      break;
+      
+      case 1:
+        state = 6;
+      break;
+ 
+      case 2:
+        state = 1;
+      break;
+      
+      case 3:
+        state = 2;
+      break;
+ 
+      case 4:
+        state = 3;
+      break;
+      
+      case 5:
+        state = 4;
+      break;
+ 
+      case 6:
+        state = 5;
+      break;    
     }
   }
 
