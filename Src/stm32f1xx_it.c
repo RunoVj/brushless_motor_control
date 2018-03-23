@@ -217,7 +217,6 @@ void SysTick_Handler(void)
         else if(uart_buf[0] == 0x03){
           BLDC.fan_mode_enable = true;
           BLDC.fan_mode_commutation_period = uart_buf[1];
-          BLDC.fan_mode_commutation_period *= 2;
         }
       }
       rx_counter = 0;
@@ -227,10 +226,10 @@ void SysTick_Handler(void)
   }
   //  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
   
-//  if (led_counter == 250){
-//    HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
-//    led_counter = 0;
-//  }
+  if (led_counter == 250){
+    HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
+    led_counter = 0;
+  }
   
   ++led_counter;
   
@@ -349,7 +348,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-  // TODO: add overflow controll, timer frequency - 10 kHz
   static bool rising_edge = true;
   if (htim == &htim2){
     if (rising_edge){
@@ -373,16 +371,20 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     __HAL_TIM_SET_COUNTER(htim, 0);
     
     
-    static uint32_t start_filter_counter = 0;
+//    static uint32_t start_filter_counter = 0;
+//    
+//    if (!BLDC.started){
+//      start_filter_counter++;
+//    }
+//    
+//    if (start_filter_counter == 9){
+//      BLDC.started = true;
+//      BLDC.control_mode = emf_mode;
+//      start_filter_counter = 0;
+//    }
     
-    if (!BLDC.started){
-      start_filter_counter++;
-    }
-    
-    if (start_filter_counter == 6){
-      BLDC.started = true;
+    if (did_it_started(&BLDC)){
       BLDC.control_mode = emf_mode;
-      start_filter_counter = 0;
     }
     
     BLDC.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
@@ -423,7 +425,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
-  HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
   if (htim == &htim3){
     
     if (BLDC.control_mode == fan_mode && BLDC.fan_mode_enable){

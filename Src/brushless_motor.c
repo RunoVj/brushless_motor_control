@@ -236,3 +236,28 @@ uint8_t get_next_state(BrushlessMotor* BLDC, uint8_t gray_code)
     }    
   } 
 }
+
+bool did_it_started(BrushlessMotor* BLDC)
+{
+  if (BLDC->successful_predictions == 0){
+    BLDC->successful_predictions = 1;
+    BLDC->next_emf_state = get_next_state(BLDC, read_gray_code());
+    return false;
+  }
+  
+  else if (get_next_state(BLDC, read_gray_code()) == BLDC->next_emf_state){
+    BLDC->successful_predictions++;
+    BLDC->next_emf_state = get_next_state(BLDC, read_gray_code());
+    if (BLDC->successful_predictions == STARTED_FILTER){
+      BLDC->successful_predictions = 0;
+      BLDC->started = true;
+      return true;
+    }
+    return false;
+  }
+  else {
+    BLDC->successful_predictions = 1;
+    BLDC->next_emf_state = get_next_state(BLDC, read_gray_code());
+    return false;
+  }
+}
