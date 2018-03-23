@@ -220,8 +220,8 @@ uint8_t get_next_state(BrushlessMotor* BLDC, uint8_t gray_code)
       case 4: return 3;
       case 6: return 4;
       case 2: return 5;
-      case 3: return 6;	
-      default : return 0;
+      case 3: return 6;
+      default: return 0;      
     }	    
   }
   else {
@@ -231,21 +231,44 @@ uint8_t get_next_state(BrushlessMotor* BLDC, uint8_t gray_code)
       case 4: return 2;
       case 6: return 3;
       case 2: return 4;
-      case 3: return 5;	
-      default : return 0;
+      case 3: return 5;
+      default: return 0;      
+    }    
+  } 
+}
+
+uint8_t get_next_gray_code(BrushlessMotor* BLDC, uint8_t state)
+{
+  if (BLDC->rotation_dir == clockwise){
+    switch (state){
+      // 2 6 4 5 1 3  <-
+      // 3 1 5 4 6 2  ->
+      case 1: return 1;
+      case 2: return 5;
+      case 3: return 4;
+      case 4: return 6;
+      case 5: return 2;
+      case 6: return 3;
+      default: return 0;      
+    }	    
+  }
+  else {
+    switch (state){
+      case 6: return 1;
+      case 1: return 5;
+      case 2: return 4;
+      case 3: return 6;
+      case 4: return 2;
+      case 5: return 3;
+      default: return 0;
     }    
   } 
 }
 
 bool did_it_started(BrushlessMotor* BLDC)
 {
-  if (BLDC->successful_predictions == 0){
-    BLDC->successful_predictions = 1;
-    BLDC->next_emf_state = get_next_state(BLDC, read_gray_code());
-    return false;
-  }
-  
-  else if (get_next_state(BLDC, read_gray_code()) == BLDC->next_emf_state){
+  BLDC->cur_gray_code = read_gray_code();
+  if (BLDC->cur_gray_code == get_next_gray_code(BLDC, BLDC->next_emf_state)){
     BLDC->successful_predictions++;
     BLDC->next_emf_state = get_next_state(BLDC, read_gray_code());
     if (BLDC->successful_predictions == STARTED_FILTER){
@@ -256,7 +279,7 @@ bool did_it_started(BrushlessMotor* BLDC)
     return false;
   }
   else {
-    BLDC->successful_predictions = 1;
+    BLDC->successful_predictions = 0;
     BLDC->next_emf_state = get_next_state(BLDC, read_gray_code());
     return false;
   }

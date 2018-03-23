@@ -28,6 +28,8 @@ typedef struct {
   bool fan_mode_enable;
   uint8_t successful_predictions;
   
+  uint8_t cur_gray_code;
+  
   uint16_t phase_a_tick;
   uint16_t phase_b_tick;
   uint16_t phase_c_tick;
@@ -50,6 +52,7 @@ void set_next_emf_state(BrushlessMotor* BLDC);
 void update_emf_state(BrushlessMotor* BLDC);
 void update_velocity(BrushlessMotor* BLDC, uint8_t velocity);
 uint8_t get_next_state(BrushlessMotor* BLDC, uint8_t gray_code);
+uint8_t get_next_gray_code(BrushlessMotor* BLDC, uint8_t state);
 
 bool did_it_started(BrushlessMotor* BLDC);
 

@@ -348,26 +348,59 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-  static bool rising_edge = true;
+  static bool a_rising_edge, b_rising_edge, c_rising_edge;
   if (htim == &htim2){
-    if (rising_edge){
-      __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_2, 
-        TIM_INPUTCHANNELPOLARITY_FALLING);
-      __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_3, 
-        TIM_INPUTCHANNELPOLARITY_FALLING);
-      __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_4, 
-        TIM_INPUTCHANNELPOLARITY_FALLING);
-      rising_edge = false;
+    switch (htim->Channel){
+      case HAL_TIM_ACTIVE_CHANNEL_1:
+      break;
+      
+      case HAL_TIM_ACTIVE_CHANNEL_2:
+        if (a_rising_edge){
+          __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_2, 
+            TIM_INPUTCHANNELPOLARITY_FALLING);
+          a_rising_edge = false;
+        }
+        else{
+          __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_2, 
+            TIM_INPUTCHANNELPOLARITY_RISING);
+          a_rising_edge = true;
+        }
+      break;
+      
+      case HAL_TIM_ACTIVE_CHANNEL_3:
+        if (b_rising_edge){
+          __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_3, 
+            TIM_INPUTCHANNELPOLARITY_FALLING);
+          b_rising_edge = false;
+        }
+        else{
+          __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_3, 
+            TIM_INPUTCHANNELPOLARITY_RISING);
+          b_rising_edge = true;
+        }
+      break;
+      
+      case HAL_TIM_ACTIVE_CHANNEL_4:
+        if (c_rising_edge){
+          __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_4, 
+            TIM_INPUTCHANNELPOLARITY_FALLING);
+          c_rising_edge = false;
+        }
+        else{
+          __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_4, 
+            TIM_INPUTCHANNELPOLARITY_RISING);
+          c_rising_edge = true;
+        }
+      break;
+      
+      case HAL_TIM_ACTIVE_CHANNEL_CLEARED:
+      break;      
     }
-    else{
-      __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_2, 
-        TIM_INPUTCHANNELPOLARITY_RISING);
-      __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_3, 
-        TIM_INPUTCHANNELPOLARITY_RISING);
-      __HAL_TIM_SET_CAPTUREPOLARITY(htim, TIM_CHANNEL_4, 
-        TIM_INPUTCHANNELPOLARITY_RISING);
-      rising_edge = true;
-    }
+    
+    BLDC.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
+    BLDC.phase_b_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_3);
+    BLDC.phase_c_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_4);
+    
     __HAL_TIM_SET_COUNTER(htim, 0);
     
     
@@ -386,10 +419,6 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     if (did_it_started(&BLDC)){
       BLDC.control_mode = emf_mode;
     }
-    
-    BLDC.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
-    BLDC.phase_b_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_3);
-    BLDC.phase_c_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_4);
     
     switch (htim->Channel){
       case HAL_TIM_ACTIVE_CHANNEL_1:
