@@ -114,83 +114,24 @@ uint8_t read_gray_code()
 }
 
 
-void set_emf_state(BrushlessMotor* BLDC, uint8_t state)
+void set_state(BrushlessMotor* BLDC, uint8_t new_state)
 {
-  BLDC->emf_state = state;
+  BLDC->state = new_state;
 }
 
-void update_emf_state(BrushlessMotor* BLDC)
+void update_state(BrushlessMotor* BLDC)
 {
-  set_emf_state(BLDC, get_next_state(BLDC, read_gray_code()));
-}
-
-void set_next_emf_state(BrushlessMotor* BLDC)
-{
-  uint8_t state = BLDC->emf_state;
-  if (BLDC->rotation_dir == clockwise){
-    switch(state){
-      case 0:
-        state = 1;
-      break;
-      
-      case 1:
-        state = 2;
-      break;
- 
-      case 2:
-        state = 3;
-      break;
-      
-      case 3:
-        state = 4;
-      break;
- 
-      case 4:
-        state = 5;
-      break;
-      
-      case 5:
-        state = 6;
-      break;
- 
-      case 6:
-        state = 1;
-      break;    
-    }
+  if (BLDC->control_mode == hall_mode){
+    set_state(BLDC, convert_next_state(BLDC, read_gray_code()));
   }
   else{
-    switch(state){
-      case 0:
-        state = 6;
-      break;
-      
-      case 1:
-        state = 6;
-      break;
- 
-      case 2:
-        state = 1;
-      break;
-      
-      case 3:
-        state = 2;
-      break;
- 
-      case 4:
-        state = 3;
-      break;
-      
-      case 5:
-        state = 4;
-      break;
- 
-      case 6:
-        state = 5;
-      break;    
-    }
+    set_state(BLDC, convert_next_state(BLDC, read_emf_code()));    
   }
+}
 
-  set_emf_state(BLDC, state);
+void set_next_state(BrushlessMotor* BLDC)
+{
+  set_state(BLDC, get_next_state(BLDC));
 }
 
 void update_velocity(BrushlessMotor* BLDC, uint8_t velocity)
@@ -209,68 +150,107 @@ void update_velocity(BrushlessMotor* BLDC, uint8_t velocity)
   update_pwm_duty(C, BLDC->pwm_duty);
 }
 
-uint8_t get_next_state(BrushlessMotor* BLDC, uint8_t gray_code)
+uint8_t convert_next_state(BrushlessMotor* BLDC, uint8_t code)
 {
-  if (BLDC->rotation_dir == clockwise){
-    switch (gray_code){
-      // 2 6 4 5 1 3  <-
-      // 3 1 5 4 6 2  ->
-      case 1: return 1;
-      case 5: return 2;
-      case 4: return 3;
-      case 6: return 4;
-      case 2: return 5;
-      case 3: return 6;
-      default: return 0;      
-    }	    
+  if (BLDC->control_mode == hall_mode){
+    if (BLDC->rotation_dir == clockwise){
+      switch (code){
+        // 2 6 4 5 1 3  <-
+        // 3 1 5 4 6 2  ->
+        case 1: return 1;
+        case 5: return 2;
+        case 4: return 3;
+        case 6: return 4;
+        case 2: return 5;
+        case 3: return 6;
+        default: return 0;      
+      }	    
+    }
+    else {
+      switch (code){
+        case 1: return 6;
+        case 5: return 1;
+        case 4: return 2;
+        case 6: return 3;
+        case 2: return 4;
+        case 3: return 5;
+        default: return 0;      
+      }    
+    }    
   }
   else {
-    switch (gray_code){
-      case 1: return 6;
-      case 5: return 1;
-      case 4: return 2;
-      case 6: return 3;
-      case 2: return 4;
-      case 3: return 5;
-      default: return 0;      
-    }    
+    if (BLDC->rotation_dir == clockwise){
+      switch (code){
+        // 4 6 7 3 1 0  <-
+        // 0 1 3 7 6 4  ->
+        case 0: return 1;
+        case 4: return 2;
+        case 6: return 3;
+        case 7: return 4;
+        case 3: return 5;
+        case 1: return 6;
+        default: return 0;      
+      }	    
+    }
+    else {
+      switch (code){
+        case 0: return 6;
+        case 4: return 1;
+        case 6: return 2;
+        case 7: return 3;
+        case 3: return 4;
+        case 1: return 5;
+        default: return 0;       
+      }    
+    }        
   } 
 }
 
-uint8_t get_next_gray_code(BrushlessMotor* BLDC, uint8_t state)
+uint8_t get_next_state(BrushlessMotor* BLDC)
 {
+  uint8_t state = BLDC->state;
   if (BLDC->rotation_dir == clockwise){
-    switch (state){
-      // 2 6 4 5 1 3  <-
-      // 3 1 5 4 6 2  ->
-      case 1: return 1;
-      case 2: return 5;
+    switch(state){
+      case 0: return 1;
+      case 1: return 2;
+      case 2: return 3;
       case 3: return 4;
-      case 4: return 6;
-      case 5: return 2;
-      case 6: return 3;
-      default: return 0;      
-    }	    
-  }
-  else {
-    switch (state){
-      case 6: return 1;
-      case 1: return 5;
-      case 2: return 4;
-      case 3: return 6;
-      case 4: return 2;
-      case 5: return 3;
+      case 4: return 5;
+      case 5: return 6;
+      case 6: return 1; 
       default: return 0;
-    }    
-  } 
+    }
+  }
+  else{
+    switch(state){
+      case 0: return 1;
+      case 1: return 6;
+      case 2: return 1;
+      case 3: return 2;
+      case 4: return 3;
+      case 5: return 4;
+      case 6: return 5; 
+      default: return 0;      
+    }
+  }
+}
+
+uint8_t read_emf_code()
+{
+  return HAL_GPIO_ReadPin(EMF_A_GPIO_Port, EMF_A_Pin) << 1 | 
+         HAL_GPIO_ReadPin(EMF_B_GPIO_Port, EMF_B_Pin) << 0 |
+         HAL_GPIO_ReadPin(EMF_C_GPIO_Port, EMF_C_Pin) << 2;
 }
 
 bool did_it_started(BrushlessMotor* BLDC)
 {
-  BLDC->cur_gray_code = read_gray_code();
-  if (BLDC->cur_gray_code == get_next_gray_code(BLDC, BLDC->next_emf_state)){
+  if (BLDC->started){
+    return true;
+  }
+  else if (BLDC->state == BLDC->next_state){
     BLDC->successful_predictions++;
-    BLDC->next_emf_state = get_next_state(BLDC, read_gray_code());
+    BLDC->next_state = get_next_state(BLDC);
+    
     if (BLDC->successful_predictions == STARTED_FILTER){
       BLDC->successful_predictions = 0;
       BLDC->started = true;
@@ -280,7 +260,10 @@ bool did_it_started(BrushlessMotor* BLDC)
   }
   else {
     BLDC->successful_predictions = 0;
-    BLDC->next_emf_state = get_next_state(BLDC, read_gray_code());
+    BLDC->next_state = get_next_state(BLDC);
     return false;
   }
 }
+
+
+
