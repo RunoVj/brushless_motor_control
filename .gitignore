@@ -6,6 +6,7 @@ MDK-ARM/brushless_motor
 MDK-ARM/DebugConfig
 MDK-ARM/RTE
 MDK-ARM/*.lst
+*.Hydronautics*
 *.ярослав
 *.Yaroslav
 *.Ilya

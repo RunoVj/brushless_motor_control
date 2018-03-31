@@ -144,10 +144,10 @@ void update_velocity(BrushlessMotor* BLDC, uint8_t velocity)
      BLDC->rotation_dir = counterclockwise;
      BLDC->pwm_duty = (velocity - 128)*47;
   }
-  
-  update_pwm_duty(A, BLDC->pwm_duty);
-  update_pwm_duty(B, BLDC->pwm_duty);
-  update_pwm_duty(C, BLDC->pwm_duty);
+	
+//  update_pwm_duty(A, BLDC->pwm_duty);
+//  update_pwm_duty(B, BLDC->pwm_duty);
+//  update_pwm_duty(C, BLDC->pwm_duty);
 }
 
 uint8_t convert_next_state(BrushlessMotor* BLDC, uint8_t code)

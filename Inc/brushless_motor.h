@@ -11,6 +11,8 @@ typedef enum { fan_mode, emf_mode, hall_mode } ControlMode;
 typedef enum { clockwise, counterclockwise } RotationDir;
 typedef enum { A, B, C} Phase;
 
+
+
 typedef struct {
   ControlMode control_mode;
   RotationDir rotation_dir;
