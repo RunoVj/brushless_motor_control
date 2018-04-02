@@ -56,6 +56,7 @@ void set_next_state(BrushlessMotor* BLDC);
 
 void update_state(BrushlessMotor* BLDC);
 void update_velocity(BrushlessMotor* BLDC, uint8_t velocity);
+void update_pwm_in_channel(BrushlessMotor* BLDC);
 
 uint8_t convert_next_state(BrushlessMotor* BLDC, uint8_t code);
 uint8_t get_next_state(BrushlessMotor* BLDC);

@@ -15,11 +15,7 @@ void commute(BrushlessMotor* BLDC,uint8_t state)
       HAL_GPIO_WritePin(BRIDGE_B_EN_GPIO_Port, 
         BRIDGE_B_EN_Pin, GPIO_PIN_SET);
       HAL_GPIO_WritePin(BRIDGE_C_EN_GPIO_Port, 
-        BRIDGE_C_EN_Pin, GPIO_PIN_RESET);
-    
-      update_pwm_duty(A, BLDC->pwm_duty);
-      update_pwm_duty(B, 0);
-      update_pwm_duty(C, 0);    
+        BRIDGE_C_EN_Pin, GPIO_PIN_RESET);   
     break;
   
     case 2:
@@ -28,11 +24,7 @@ void commute(BrushlessMotor* BLDC,uint8_t state)
       HAL_GPIO_WritePin(BRIDGE_B_EN_GPIO_Port, 
         BRIDGE_B_EN_Pin, GPIO_PIN_RESET);
       HAL_GPIO_WritePin(BRIDGE_C_EN_GPIO_Port, 
-        BRIDGE_C_EN_Pin, GPIO_PIN_SET);
-
-      update_pwm_duty(A, BLDC->pwm_duty);
-      update_pwm_duty(B, 0);
-      update_pwm_duty(C, 0);     
+        BRIDGE_C_EN_Pin, GPIO_PIN_SET);  
     break;
   
     case 3:
@@ -42,10 +34,6 @@ void commute(BrushlessMotor* BLDC,uint8_t state)
         BRIDGE_B_EN_Pin, GPIO_PIN_SET);
       HAL_GPIO_WritePin(BRIDGE_C_EN_GPIO_Port, 
         BRIDGE_C_EN_Pin, GPIO_PIN_SET);
-
-      update_pwm_duty(A, 0);
-      update_pwm_duty(B, BLDC->pwm_duty);
-      update_pwm_duty(C, 0); 
     break;
     
     case 4:
@@ -55,10 +43,6 @@ void commute(BrushlessMotor* BLDC,uint8_t state)
         BRIDGE_B_EN_Pin, GPIO_PIN_SET);
       HAL_GPIO_WritePin(BRIDGE_C_EN_GPIO_Port, 
         BRIDGE_C_EN_Pin, GPIO_PIN_RESET);
-
-      update_pwm_duty(A, 0);
-      update_pwm_duty(B, BLDC->pwm_duty);
-      update_pwm_duty(C, 0);     
     break;			
     
     case 5:
@@ -68,10 +52,6 @@ void commute(BrushlessMotor* BLDC,uint8_t state)
         BRIDGE_B_EN_Pin, GPIO_PIN_RESET);
       HAL_GPIO_WritePin(BRIDGE_C_EN_GPIO_Port, 
         BRIDGE_C_EN_Pin, GPIO_PIN_SET);
-
-      update_pwm_duty(A, 0);
-      update_pwm_duty(B, 0);
-      update_pwm_duty(C, BLDC->pwm_duty); 		
     break;
     
     case 6:
@@ -80,13 +60,10 @@ void commute(BrushlessMotor* BLDC,uint8_t state)
       HAL_GPIO_WritePin(BRIDGE_B_EN_GPIO_Port, 
         BRIDGE_B_EN_Pin, GPIO_PIN_SET);
       HAL_GPIO_WritePin(BRIDGE_C_EN_GPIO_Port, 
-        BRIDGE_C_EN_Pin, GPIO_PIN_SET);
-
-      update_pwm_duty(A, 0);
-      update_pwm_duty(B, 0);
-      update_pwm_duty(C, BLDC->pwm_duty);     
+        BRIDGE_C_EN_Pin, GPIO_PIN_SET);    
     break;
   }
+  update_pwm_in_channel(BLDC);
 }
 
 void update_pwm_duty(Phase phase, uint16_t duty)
@@ -144,10 +121,48 @@ void update_velocity(BrushlessMotor* BLDC, uint8_t velocity)
      BLDC->rotation_dir = counterclockwise;
      BLDC->pwm_duty = (velocity - 128)*47;
   }
-	
-//  update_pwm_duty(A, BLDC->pwm_duty);
-//  update_pwm_duty(B, BLDC->pwm_duty);
-//  update_pwm_duty(C, BLDC->pwm_duty);
+  update_pwm_in_channel(BLDC);
+}
+
+void update_pwm_in_channel(BrushlessMotor* BLDC)
+{
+  switch(BLDC->state){
+    case 1:
+      update_pwm_duty(A, BLDC->pwm_duty);
+      update_pwm_duty(B, 0);
+      update_pwm_duty(C, 0);    
+    break;
+  
+    case 2:
+      update_pwm_duty(A, BLDC->pwm_duty);
+      update_pwm_duty(B, 0);
+      update_pwm_duty(C, 0);     
+    break;
+  
+    case 3:
+      update_pwm_duty(A, 0);
+      update_pwm_duty(B, BLDC->pwm_duty);
+      update_pwm_duty(C, 0); 
+    break;
+    
+    case 4:
+      update_pwm_duty(A, 0);
+      update_pwm_duty(B, BLDC->pwm_duty);
+      update_pwm_duty(C, 0);     
+    break;			
+    
+    case 5:
+      update_pwm_duty(A, 0);
+      update_pwm_duty(B, 0);
+      update_pwm_duty(C, BLDC->pwm_duty); 		
+    break;
+    
+    case 6:
+      update_pwm_duty(A, 0);
+      update_pwm_duty(B, 0);
+      update_pwm_duty(C, BLDC->pwm_duty);     
+    break;
+  }  
 }
 
 uint8_t convert_next_state(BrushlessMotor* BLDC, uint8_t code)

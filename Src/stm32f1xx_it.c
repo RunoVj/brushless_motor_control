@@ -209,6 +209,7 @@ void SysTick_Handler(void)
         if(uart_buf[0] == 0x01){      
           update_velocity(&BLDC, uart_buf[1]);          
         }
+        
         else if(uart_buf[0] == 0x02){
           BLDC.fan_mode_enable = false;
           set_state(&BLDC, uart_buf[1]);
@@ -406,14 +407,17 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 
     BLDC.cur_emf_code = read_emf_code();
     BLDC.cur_gray_code = read_gray_code();
+
     
-    
-    if (did_it_started(&BLDC)){
-      BLDC.control_mode = emf_mode;
-      update_state(&BLDC);
       set_next_state(&BLDC);
       commute(&BLDC, BLDC.state);
-    }
+   
+//    if (did_it_started(&BLDC)){
+//      BLDC.control_mode = emf_mode;
+//      update_state(&BLDC);
+//      set_next_state(&BLDC);
+//      commute(&BLDC, BLDC.state);
+//    }
     
     switch (htim->Channel){
       case HAL_TIM_ACTIVE_CHANNEL_1:
@@ -478,7 +482,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
         BLDC.started = false;
 			
       }
-    }   
+    }
   }
 }
 /* USER CODE END 1 */
