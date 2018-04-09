@@ -6,6 +6,11 @@
 
 BrushlessMotor BLDC;
 
+void init(BrushlessMotor *BLDC)
+{
+  BLDC->settings.address = 0x01;
+}
+
 void commute(BrushlessMotor* BLDC,uint8_t state)
 {
   switch(state){
@@ -63,7 +68,7 @@ void commute(BrushlessMotor* BLDC,uint8_t state)
         BRIDGE_C_EN_Pin, GPIO_PIN_SET);    
     break;
   }
-  update_pwm_in_channel(BLDC);
+  update_pwm_in_active_channel(BLDC);
 }
 
 void update_pwm_duty(Phase phase, uint16_t duty)
@@ -93,12 +98,12 @@ uint8_t read_gray_code()
 
 void set_state(BrushlessMotor* BLDC, uint8_t new_state)
 {
-  BLDC->state = new_state;
+  BLDC->state_param.state = new_state;
 }
 
 void update_state(BrushlessMotor* BLDC)
 {
-  if (BLDC->control_mode == hall_mode){
+  if (BLDC->control_param.control_mode == hall_mode){
     set_state(BLDC, convert_next_state(BLDC, read_gray_code()));
   }
   else{
@@ -114,61 +119,61 @@ void set_next_state(BrushlessMotor* BLDC)
 void update_velocity(BrushlessMotor* BLDC, uint8_t velocity)
 {
   if (velocity <= 128){
-     BLDC->rotation_dir = clockwise;
-     BLDC->pwm_duty = (128 - velocity)*47;
+     BLDC->control_param.rotation_dir = clockwise;
+     BLDC->control_param.pwm_duty = (128 - velocity)*47;
   }
   else {
-     BLDC->rotation_dir = counterclockwise;
-     BLDC->pwm_duty = (velocity - 128)*47;
+     BLDC->control_param.rotation_dir = counterclockwise;
+     BLDC->control_param.pwm_duty = (velocity - 128)*47;
   }
-  update_pwm_in_channel(BLDC);
+  update_pwm_in_active_channel(BLDC);
 }
 
-void update_pwm_in_channel(BrushlessMotor* BLDC)
+void update_pwm_in_active_channel(BrushlessMotor* BLDC)
 {
-  switch(BLDC->state){
+  switch(BLDC->state_param.state){
     case 1:
-      update_pwm_duty(A, BLDC->pwm_duty);
+      update_pwm_duty(A, BLDC->control_param.pwm_duty);
       update_pwm_duty(B, 0);
       update_pwm_duty(C, 0);    
     break;
   
     case 2:
-      update_pwm_duty(A, BLDC->pwm_duty);
+      update_pwm_duty(A, BLDC->control_param.pwm_duty);
       update_pwm_duty(B, 0);
       update_pwm_duty(C, 0);     
     break;
   
     case 3:
       update_pwm_duty(A, 0);
-      update_pwm_duty(B, BLDC->pwm_duty);
+      update_pwm_duty(B, BLDC->control_param.pwm_duty);
       update_pwm_duty(C, 0); 
     break;
     
     case 4:
       update_pwm_duty(A, 0);
-      update_pwm_duty(B, BLDC->pwm_duty);
+      update_pwm_duty(B, BLDC->control_param.pwm_duty);
       update_pwm_duty(C, 0);     
     break;			
     
     case 5:
       update_pwm_duty(A, 0);
       update_pwm_duty(B, 0);
-      update_pwm_duty(C, BLDC->pwm_duty); 		
+      update_pwm_duty(C, BLDC->control_param.pwm_duty); 		
     break;
     
     case 6:
       update_pwm_duty(A, 0);
       update_pwm_duty(B, 0);
-      update_pwm_duty(C, BLDC->pwm_duty);     
+      update_pwm_duty(C, BLDC->control_param.pwm_duty);     
     break;
   }  
 }
 
 uint8_t convert_next_state(BrushlessMotor* BLDC, uint8_t code)
 {
-  if (BLDC->control_mode == hall_mode){
-    if (BLDC->rotation_dir == clockwise){
+  if (BLDC->control_param.control_mode == hall_mode){
+    if (BLDC->control_param.rotation_dir == clockwise){
       switch (code){
         // 2 6 4 5 1 3  <-
         // 3 1 5 4 6 2  ->
@@ -194,7 +199,7 @@ uint8_t convert_next_state(BrushlessMotor* BLDC, uint8_t code)
     }    
   }
   else {
-    if (BLDC->rotation_dir == clockwise){
+    if (BLDC->control_param.rotation_dir == clockwise){
       switch (code){
         // 4 6 7 3 1 0  <-
         // 0 1 3 7 6 4  ->
@@ -223,8 +228,8 @@ uint8_t convert_next_state(BrushlessMotor* BLDC, uint8_t code)
 
 uint8_t get_next_state(BrushlessMotor* BLDC)
 {
-  uint8_t state = BLDC->state;
-  if (BLDC->rotation_dir == clockwise){
+  uint8_t state = BLDC->state_param.state;
+  if (BLDC->control_param.rotation_dir == clockwise){
     switch(state){
       case 0: return 1;
       case 1: return 2;
@@ -259,23 +264,23 @@ uint8_t read_emf_code()
 
 bool did_it_started(BrushlessMotor* BLDC)
 {
-  if (BLDC->started){
+  if (BLDC->state_param.started){
     return true;
   }
-  else if (BLDC->state == BLDC->next_state){
-    BLDC->successful_predictions++;
-    BLDC->next_state = get_next_state(BLDC);
+  else if (BLDC->state_param.state == BLDC->state_param.next_state){
+    BLDC->state_param.successful_predictions++;
+    BLDC->state_param.next_state = get_next_state(BLDC);
     
-    if (BLDC->successful_predictions == STARTED_FILTER){
-      BLDC->successful_predictions = 0;
-      BLDC->started = true;
+    if (BLDC->state_param.successful_predictions == STARTED_FILTER){
+      BLDC->state_param.successful_predictions = 0;
+      BLDC->state_param.started = true;
       return true;
     }
     return false;
   }
   else {
-    BLDC->successful_predictions = 0;
-    BLDC->next_state = get_next_state(BLDC);
+    BLDC->state_param.successful_predictions = 0;
+    BLDC->state_param.next_state = get_next_state(BLDC);
     return false;
   }
 }

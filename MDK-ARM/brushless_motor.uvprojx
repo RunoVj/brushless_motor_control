@@ -445,6 +445,16 @@
               <FileType>1</FileType>
               <FilePath>..\Src\brushless_motor.c</FilePath>
             </File>
+            <File>
+              <FileName>checksum.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\checksum.c</FilePath>
+            </File>
+            <File>
+              <FileName>communication.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\communication.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -37,6 +37,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "brushless_motor.h"
+#include "communication.h"
 
 uint8_t rx_byte;
 uint8_t rx_counter;
@@ -204,21 +205,8 @@ void SysTick_Handler(void)
     if (communication_counter >= package_timeout){
       communication_counter = 0;
       if (uart1_package_received){
-        uart1_package_received = false;
-
-        if(uart_buf[0] == 0x01){      
-          update_velocity(&BLDC, uart_buf[1]);          
-        }
-        
-        else if(uart_buf[0] == 0x02){
-          BLDC.fan_mode_enable = false;
-          set_state(&BLDC, uart_buf[1]);
-          commute(&BLDC, uart_buf[1]);
-        }
-        else if(uart_buf[0] == 0x03){
-          BLDC.fan_mode_enable = true;
-          BLDC.fan_mode_commutation_period = uart_buf[1];
-        }
+        uart1_package_received = false;      
+        parse_package(&BLDC, uart_buf, 2);
       }
       rx_counter = 0;
       HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
@@ -398,19 +386,20 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
       break;      
     }
     
-    BLDC.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
-    BLDC.phase_b_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_3);
-    BLDC.phase_c_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_4);
+    BLDC.state_param.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
+    BLDC.state_param.phase_b_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_3);
+    BLDC.state_param.phase_c_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_4);
     
     __HAL_TIM_SET_COUNTER(htim, 0);
     
 
-    BLDC.cur_emf_code = read_emf_code();
-    BLDC.cur_gray_code = read_gray_code();
-
+    BLDC.state_param.cur_emf_code = read_emf_code();
+    BLDC.state_param.cur_gray_code = read_gray_code();
     
-      set_next_state(&BLDC);
-      commute(&BLDC, BLDC.state);
+    BLDC.state_param.hall_delay_started = true;
+    
+//    set_next_state(&BLDC);
+//    commute(&BLDC, BLDC.state);
    
 //    if (did_it_started(&BLDC)){
 //      BLDC.control_mode = emf_mode;
@@ -424,24 +413,24 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_2:
-        BLDC.ticks_for_next_commute = (uint16_t)(BLDC.phase_a_tick/2);
-        BLDC.ticks_threshold = BLDC.phase_a_tick;
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_a_tick/2);
+        BLDC.state_param.ticks_threshold = BLDC.state_param.phase_a_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_3:
-        BLDC.ticks_for_next_commute = (uint16_t)(BLDC.phase_b_tick/2);
-        BLDC.ticks_threshold = BLDC.phase_b_tick;
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_b_tick/2);
+        BLDC.state_param.ticks_threshold = BLDC.state_param.phase_b_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_4:
-        BLDC.ticks_for_next_commute = (uint16_t)(BLDC.phase_c_tick/2);
-        BLDC.ticks_threshold = BLDC.phase_c_tick;
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_c_tick/2);
+        BLDC.state_param.ticks_threshold = BLDC.state_param.phase_c_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_CLEARED:
       break;      
     }
-    BLDC.ticks_threshold *= 10;
+    BLDC.state_param.ticks_threshold *= 10;
   }
 }
 
@@ -454,36 +443,48 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim == &htim3){
-    
-    if (BLDC.control_mode == fan_mode && BLDC.fan_mode_enable){
-      static uint16_t fan_mode_counter = 0;
-      ++fan_mode_counter;
-     
-      if (fan_mode_counter >= BLDC.fan_mode_commutation_period){
-        fan_mode_counter = 0;
-        set_next_state(&BLDC);
-        commute(&BLDC, BLDC.state);
-      }
-    }
-    
-    else if (BLDC.control_mode == emf_mode){
-      BLDC.ticks_for_next_commute--;
-      BLDC.ticks_threshold--;
-      
-//      if (BLDC.ticks_for_next_commute == 0){
+//  if (htim == &htim3){
+//    
+//    if (BLDC.control_param.control_mode == fan_mode && BLDC.control_param.fan_mode_enable){
+//      static uint16_t fan_mode_counter = 0;
+//      ++fan_mode_counter;
+//     
+//      if (fan_mode_counter >= BLDC.control_param.fan_mode_commutation_period){
+//        fan_mode_counter = 0;
+//        set_next_state(&BLDC);
+//        commute(&BLDC, BLDC.state_param.state);
+//      }
+//    }
+//    
+//    else if (BLDC.control_param.control_mode == emf_mode){
+//      BLDC.state_param.ticks_for_next_commute--;
+//      BLDC.state_param.ticks_threshold--;
+//      
+////      if (BLDC.ticks_for_next_commute == 0){
+////        update_state(&BLDC);
+////        set_next_state(&BLDC);
+////        commute(&BLDC, BLDC.state);
+////      }
+////      else 
+//        if (BLDC.state_param.ticks_threshold <= 0){
+//        BLDC.control_param.control_mode = fan_mode;
+//        BLDC.state_param.started = false;
+//      }
+//    }
+//    else if (BLDC.control_param.control_mode == hall_mode && BLDC.state_param.hall_delay_started){
+//      static uint16_t hall_mode_counter = 0;
+//      ++hall_mode_counter;
+//     
+//      if (hall_mode_counter >= BLDC.control_param.fan_mode_commutation_period){
+//        hall_mode_counter = 0;
+//        BLDC.state_param.hall_delay_started = false;
 //        update_state(&BLDC);
 //        set_next_state(&BLDC);
-//        commute(&BLDC, BLDC.state);
-//      }
-//      else 
-        if (BLDC.ticks_threshold <= 0){
-        BLDC.control_mode = fan_mode;
-        BLDC.started = false;
-			
-      }
-    }
-  }
+//        commute(&BLDC, BLDC.state_param.state);
+//      }      
+//    }
+
+//  }
 }
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -113,7 +113,7 @@ int main(void)
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);   // phase C
 
 
-  BLDC.control_mode = hall_mode;
+  BLDC.control_param.control_mode = hall_mode;
 
 //  update_state(&BLDC);
 //  commute(&BLDC, BLDC.state);
