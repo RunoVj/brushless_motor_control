@@ -88,11 +88,16 @@ void update_pwm_duty(Phase phase, uint16_t duty)
   }
 }
 
-uint8_t read_gray_code()
+uint8_t read_code()
 {
-   return HAL_GPIO_ReadPin(EMF_A_GPIO_Port, EMF_A_Pin)      | 
-          HAL_GPIO_ReadPin(EMF_B_GPIO_Port, EMF_B_Pin) << 1 |
-          HAL_GPIO_ReadPin(EMF_C_GPIO_Port, EMF_C_Pin) << 2;
+  BLDC.state_param.phase_a_state = HAL_GPIO_ReadPin(EMF_A_GPIO_Port, EMF_A_Pin);
+  BLDC.state_param.phase_b_state = HAL_GPIO_ReadPin(EMF_B_GPIO_Port, EMF_B_Pin);
+  BLDC.state_param.phase_c_state = HAL_GPIO_ReadPin(EMF_C_GPIO_Port, EMF_C_Pin);
+  
+  BLDC.state_param.position_code = BLDC.state_param.phase_a_state      | 
+                              BLDC.state_param.phase_b_state << 1 |
+                              BLDC.state_param.phase_c_state << 2;
+  return BLDC.state_param.position_code;
 }
 
 
@@ -103,12 +108,7 @@ void set_state(BrushlessMotor* BLDC, uint8_t new_state)
 
 void update_state(BrushlessMotor* BLDC)
 {
-  if (BLDC->control_param.control_mode == hall_mode){
-    set_state(BLDC, convert_next_state(BLDC, read_gray_code()));
-  }
-  else{
-    set_state(BLDC, convert_next_state(BLDC, read_emf_code()));    
-  }
+  set_state(BLDC, convert_next_state(BLDC, read_code()));
 }
 
 void set_next_state(BrushlessMotor* BLDC)
@@ -255,13 +255,6 @@ uint8_t get_next_state(BrushlessMotor* BLDC)
   }
 }
 
-uint8_t read_emf_code()
-{
-  return HAL_GPIO_ReadPin(EMF_A_GPIO_Port, EMF_A_Pin) << 1 | 
-         HAL_GPIO_ReadPin(EMF_B_GPIO_Port, EMF_B_Pin) << 0 |
-         HAL_GPIO_ReadPin(EMF_C_GPIO_Port, EMF_C_Pin) << 2;
-}
-
 bool did_it_started(BrushlessMotor* BLDC)
 {
   if (BLDC->state_param.started){
@@ -284,6 +277,5 @@ bool did_it_started(BrushlessMotor* BLDC)
     return false;
   }
 }
-
 
 

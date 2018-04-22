@@ -4,6 +4,8 @@
 #include "stdint.h"
 #include "stdbool.h"
 
+#define MAX_LOG_INFO_BUF  2
+
 #define MAX_CURRENT 4000
 #define STARTED_FILTER 6
 
@@ -12,7 +14,6 @@ typedef enum { clockwise, counterclockwise } RotationDir;
 typedef enum { A, B, C } Phase;
 
 typedef struct {
-  
   struct {
     uint8_t address;   
   } settings; // parameters unchangeable during working
@@ -23,14 +24,18 @@ typedef struct {
 
     uint8_t state;
     uint8_t next_state;
-    uint8_t cur_gray_code;
-    uint8_t cur_emf_code;
+    uint8_t position_code;
     
     uint8_t successful_predictions;
     
     uint16_t phase_a_tick;
     uint16_t phase_b_tick;
-    uint16_t phase_c_tick;  
+    uint16_t phase_c_tick; 
+
+    uint8_t phase_a_state;
+    uint8_t phase_b_state;
+    uint8_t phase_c_state;
+    
     uint16_t ticks_for_next_commute;
     int32_t ticks_threshold;
 
@@ -39,7 +44,7 @@ typedef struct {
   } state_param;
 
   struct {
-    bool fan_mode_enable;
+    bool position_setting_enabled;
     ControlMode control_mode;
     RotationDir rotation_dir;
     
@@ -58,8 +63,7 @@ extern BrushlessMotor BLDC;
 
 void init(BrushlessMotor *BLDC);
 
-uint8_t read_gray_code(void);
-uint8_t read_emf_code(void);
+uint8_t read_code(void);
 
 void commute(BrushlessMotor *BLDC, uint8_t state);
 void update_pwm_duty(Phase phase, uint16_t duty);

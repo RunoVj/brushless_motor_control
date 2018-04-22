@@ -112,13 +112,15 @@ int main(void)
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_3);   // phase B
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);   // phase C
 
+  HAL_ADC_Start_IT(&hadc1);
 
-  BLDC.control_param.control_mode = hall_mode;
+  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
 
-//  update_state(&BLDC);
-//  commute(&BLDC, BLDC.state);
-
-//  HAL_ADC_Start_IT(&hadc1);
+  init(&BLDC);
+  BLDC.control_param.control_mode = fan_mode;
+  BLDC.control_param.position_setting_enabled = false;
+  update_state(&BLDC);
+  commute(&BLDC, BLDC.state_param.state);  
   /* USER CODE END 2 */
 
   /* Infinite loop */
