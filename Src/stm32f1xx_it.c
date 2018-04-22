@@ -393,6 +393,10 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 
    
     BLDC.state_param.hall_delay_started = true;
+    
+    if (BLDC.control_param.position_setting_enabled){
+      update_state(&BLDC);
+    }
 
     
     switch (htim->Channel){

@@ -8,23 +8,26 @@
 #include "checksum.h"
 #include "brushless_motor.h"
 
+uint8_t msg_buf[VMA_DEV_RESPONSE_LENGTH];
+
 void parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length)
 { 
-  BLDC->control_param.pwm_duty = message[VMA_DEV_REQUEST_VELOCITY1];
-  update_velocity(BLDC, BLDC->control_param.pwm_duty );          
-  
-  BLDC->control_param.position_setting_enabled = message[VMA_DEV_REQUEST_ADDRESS];
-  if (BLDC->control_param.position_setting_enabled){
-    commute(BLDC, message[VMA_DEV_REQUEST_SETTING]);
+  if (IsChecksumm8bCorrect(message, length)){
+    BLDC->control_param.pwm_duty = message[VMA_DEV_REQUEST_VELOCITY1];
+    update_velocity(BLDC, BLDC->control_param.pwm_duty );          
+    
+    BLDC->control_param.position_setting_enabled = message[VMA_DEV_REQUEST_ADDRESS];
+    if (BLDC->control_param.position_setting_enabled){
+      commute(BLDC, message[VMA_DEV_REQUEST_SETTING]);
+    }
+    
+    BLDC->control_param.fan_mode_commutation_period = message[VMA_DEV_REQUEST_VELOCITY2];
   }
-  
-  BLDC->control_param.fan_mode_commutation_period = message[VMA_DEV_REQUEST_VELOCITY2];
     
 }
 
 void send_package(BrushlessMotor *BLDC)
 {
-  uint8_t msg_buf[VMA_DEV_RESPONSE_LENGTH];
   msg_buf[VMA_DEV_RESPONSE_AA] = 0xAA;
   msg_buf[VMA_DEV_RESPONSE_ADDRESS] = BLDC->settings.address;
   msg_buf[VMA_DEV_RESPONSE_ERRORS] = 0xFF;
