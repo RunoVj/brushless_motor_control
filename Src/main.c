@@ -112,8 +112,6 @@ int main(void)
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_3);   // phase B
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);   // phase C
 
-  HAL_ADC_Start_IT(&hadc1);
-
   HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
 
   init(&BLDC);

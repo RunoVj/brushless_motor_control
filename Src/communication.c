@@ -12,13 +12,17 @@ uint8_t msg_buf[VMA_DEV_RESPONSE_LENGTH];
 
 void parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length)
 { 
+  static uint8_t old_state, new_state;
   if (IsChecksumm8bCorrect(message, length)){
     BLDC->control_param.pwm_duty = message[VMA_DEV_REQUEST_VELOCITY1];
     update_velocity(BLDC, BLDC->control_param.pwm_duty );          
     
     BLDC->control_param.position_setting_enabled = message[VMA_DEV_REQUEST_ADDRESS];
-    if (BLDC->control_param.position_setting_enabled){
+    old_state = new_state;
+    new_state = message[VMA_DEV_REQUEST_SETTING];
+    if (BLDC->control_param.position_setting_enabled && new_state != old_state){
       commute(BLDC, message[VMA_DEV_REQUEST_SETTING]);
+      old_state = new_state;
     }
     
     BLDC->control_param.fan_mode_commutation_period = message[VMA_DEV_REQUEST_VELOCITY2];

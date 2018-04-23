@@ -6,6 +6,8 @@
 
 BrushlessMotor BLDC;
 
+static uint32_t commute_counter;
+
 void init(BrushlessMotor *BLDC)
 {
   BLDC->settings.address = 0x01;
@@ -13,6 +15,7 @@ void init(BrushlessMotor *BLDC)
 
 void commute(BrushlessMotor* BLDC,uint8_t state)
 {
+  ++commute_counter;
   switch(state){
     case 1:
       HAL_GPIO_WritePin(BRIDGE_A_EN_GPIO_Port, 

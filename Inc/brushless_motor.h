@@ -9,6 +9,7 @@
 #define MAX_CURRENT 4000
 #define STARTED_FILTER 6
 
+
 typedef enum { fan_mode, emf_mode, hall_mode } ControlMode;
 typedef enum { clockwise, counterclockwise } RotationDir;
 typedef enum { A, B, C } Phase;
