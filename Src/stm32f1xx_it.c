@@ -392,13 +392,8 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     __HAL_TIM_SET_COUNTER(htim, 0);
 
    
-    
-    if (BLDC.control_param.control_mode != fan_mode || BLDC.control_param.position_setting_enabled){
-      update_state(&BLDC);
-    }
-    else {
-      BLDC.state_param.hall_delay_started = true;      
-    }
+    update_state(&BLDC);
+    BLDC.state_param.hall_delay_started = true;      
 
     
     switch (htim->Channel){
@@ -406,17 +401,17 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_2:
-        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_a_tick/3);
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_a_tick*2/3);
         BLDC.state_param.ticks_threshold = BLDC.state_param.phase_a_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_3:
-        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_b_tick/3);
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_b_tick*2/3);
         BLDC.state_param.ticks_threshold = BLDC.state_param.phase_b_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_4:
-        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_c_tick/3);
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_c_tick*2/3);
         BLDC.state_param.ticks_threshold = BLDC.state_param.phase_c_tick;
       break;
       
@@ -443,13 +438,12 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
       }
     }
     
-    else if (BLDC.control_param.control_mode == emf_mode &&  BLDC.state_param.hall_delay_started){
+    else if (BLDC.control_param.control_mode == emf_mode && BLDC.state_param.hall_delay_started){
       static uint16_t hall_mode_counter = 0;
       ++hall_mode_counter;
      
       if (hall_mode_counter >= BLDC.state_param.ticks_for_next_commute){ 
         hall_mode_counter = 0;
-//        update_state(&BLDC);
         set_next_state(&BLDC);
         commute(&BLDC, BLDC.state_param.state);
         BLDC.state_param.hall_delay_started = false;

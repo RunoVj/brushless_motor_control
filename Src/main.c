@@ -115,7 +115,7 @@ int main(void)
   HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
 
   init(&BLDC);
-  BLDC.control_param.control_mode = fan_mode;
+  BLDC.control_param.control_mode = emf_mode;
   BLDC.control_param.position_setting_enabled = false;
   update_state(&BLDC);
   commute(&BLDC, BLDC.state_param.state);  

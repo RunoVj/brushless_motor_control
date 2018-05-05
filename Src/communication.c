@@ -21,7 +21,8 @@ void parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length)
     old_state = new_state;
     new_state = message[VMA_DEV_REQUEST_SETTING];
     if (BLDC->control_param.position_setting_enabled && new_state != old_state){
-      commute(BLDC, message[VMA_DEV_REQUEST_SETTING]);
+      BLDC->state_param.state = new_state;
+      commute(BLDC, new_state);
       old_state = new_state;
     }
     

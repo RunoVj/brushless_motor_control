@@ -13,7 +13,7 @@ void init(BrushlessMotor *BLDC)
   BLDC->settings.address = 0x01;
 }
 
-void commute(BrushlessMotor* BLDC,uint8_t state)
+void commute(BrushlessMotor* BLDC, uint8_t state)
 {
   ++commute_counter;
   switch(state){
@@ -71,7 +71,7 @@ void commute(BrushlessMotor* BLDC,uint8_t state)
         BRIDGE_C_EN_Pin, GPIO_PIN_SET);    
     break;
   }
-  update_pwm_in_active_channel(BLDC);
+  update_pwm_in_active_channel(BLDC, state);
 }
 
 void update_pwm_duty(Phase phase, uint16_t duty)
@@ -129,12 +129,12 @@ void update_velocity(BrushlessMotor* BLDC, uint8_t velocity)
      BLDC->control_param.rotation_dir = counterclockwise;
      BLDC->control_param.pwm_duty = (velocity - 128)*47;
   }
-  update_pwm_in_active_channel(BLDC);
+  update_pwm_in_active_channel(BLDC, BLDC->state_param.state);
 }
 
-void update_pwm_in_active_channel(BrushlessMotor* BLDC)
+void update_pwm_in_active_channel(BrushlessMotor* BLDC, uint8_t state)
 {
-  switch(BLDC->state_param.state){
+  switch(state){
     case 1:
       update_pwm_duty(A, BLDC->control_param.pwm_duty);
       update_pwm_duty(B, 0);
