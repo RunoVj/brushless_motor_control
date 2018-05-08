@@ -37,21 +37,24 @@
 
 /* USER CODE BEGIN 0 */
 #include "brushless_motor.h"
+#include "communication.h"
+#include "usart.h"
 
 uint8_t rx_byte;
 uint8_t rx_counter;
 bool uart1_package_received;
-uint8_t uart_pack_size = 2;
-uint8_t uart_buf[2];
+bool uart1_package_sended = true;
 
-uint8_t package_timeout = 2;
+uint8_t uart_pack_size = VMA_DEV_REQUEST_LENGTH;
+uint8_t uart_receive_buf[VMA_DEV_REQUEST_LENGTH];
+
+uint8_t package_timeout = RECEIVE_TIMEOUT;
 
 bool package_started = true; //to start receiving
 
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_adc1;
 extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
@@ -202,36 +205,28 @@ void SysTick_Handler(void)
   if (package_started){
     ++communication_counter;
     if (communication_counter >= package_timeout){
-      communication_counter = 0;
       if (uart1_package_received){
-        uart1_package_received = false;
-
-        if(uart_buf[0] == 0x01){      
-          update_velocity(&BLDC, uart_buf[1]);          
-        }
-        else if(uart_buf[0] == 0x02){
-          BLDC.fan_mode_enable = false;
-          set_state(&BLDC, uart_buf[1]);
-          commute(&BLDC, uart_buf[1]);
-        }
-        else if(uart_buf[0] == 0x03){
-          BLDC.fan_mode_enable = true;
-          BLDC.fan_mode_commutation_period = uart_buf[1];
-        }
+        uart1_package_received = false;      
+        parse_package(&BLDC, uart_receive_buf, VMA_DEV_REQUEST_LENGTH);
+        if (uart1_package_sended){
+          send_package(&BLDC); 
+        }          
       }
       rx_counter = 0;
       HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
       package_started = false;
+          
+      communication_counter = 0;
      }
   }
-  //  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
-  
+    
   if (led_counter == 250){
     HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
     led_counter = 0;
   }
   
   ++led_counter;
+  HAL_ADC_Start_IT(&hadc1);
   
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -243,20 +238,6 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f1xx.s).                    */
 /******************************************************************************/
-
-/**
-* @brief This function handles DMA1 channel1 global interrupt.
-*/
-void DMA1_Channel1_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
-
-  /* USER CODE END DMA1_Channel1_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_adc1);
-  /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
-
-  /* USER CODE END DMA1_Channel1_IRQn 1 */
-}
 
 /**
 * @brief This function handles DMA1 channel4 global interrupt.
@@ -282,6 +263,7 @@ void ADC1_2_IRQHandler(void)
   /* USER CODE END ADC1_2_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc1);
   /* USER CODE BEGIN ADC1_2_IRQn 1 */
+  BLDC.state_param.current = HAL_ADC_GetValue(&hadc1);
 
   /* USER CODE END ADC1_2_IRQn 1 */
 }
@@ -335,7 +317,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     package_started = true;
 	}
   
-	uart_buf[rx_counter++] = rx_byte;
+	uart_receive_buf[rx_counter++] = rx_byte;
 	
 	if (rx_counter == uart_pack_size) {
 		uart1_package_received = true;
@@ -344,6 +326,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   else {
     HAL_UART_Receive_IT(&huart1, &rx_byte, 1);    
   }
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  uart1_package_sended = true;
+  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
@@ -397,88 +385,74 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
       break;      
     }
     
-    BLDC.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
-    BLDC.phase_b_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_3);
-    BLDC.phase_c_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_4);
+    BLDC.state_param.phase_a_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_2);
+    BLDC.state_param.phase_b_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_3);
+    BLDC.state_param.phase_c_tick = __HAL_TIM_GET_COMPARE(htim, TIM_CHANNEL_4);
     
     __HAL_TIM_SET_COUNTER(htim, 0);
-    
 
-    BLDC.cur_emf_code = read_emf_code();
-    BLDC.cur_gray_code = read_gray_code();
-    
-    
-    if (did_it_started(&BLDC)){
-      BLDC.control_mode = emf_mode;
+    // disable commutation in position setting mode
+    if (!BLDC.control_param.position_setting_enabled){
       update_state(&BLDC);
-      set_next_state(&BLDC);
-      commute(&BLDC, BLDC.state);
+      BLDC.state_param.hall_delay_started = true;         
     }
+   
+
     
     switch (htim->Channel){
       case HAL_TIM_ACTIVE_CHANNEL_1:
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_2:
-        BLDC.ticks_for_next_commute = (uint16_t)(BLDC.phase_a_tick/2);
-        BLDC.ticks_threshold = BLDC.phase_a_tick;
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_a_tick/2);
+        BLDC.state_param.ticks_threshold = BLDC.state_param.phase_a_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_3:
-        BLDC.ticks_for_next_commute = (uint16_t)(BLDC.phase_b_tick/2);
-        BLDC.ticks_threshold = BLDC.phase_b_tick;
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_b_tick/2);
+        BLDC.state_param.ticks_threshold = BLDC.state_param.phase_b_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_4:
-        BLDC.ticks_for_next_commute = (uint16_t)(BLDC.phase_c_tick/2);
-        BLDC.ticks_threshold = BLDC.phase_c_tick;
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_c_tick/2);
+        BLDC.state_param.ticks_threshold = BLDC.state_param.phase_c_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_CLEARED:
       break;      
     }
-    BLDC.ticks_threshold *= 10;
+    BLDC.state_param.ticks_threshold *= 10;
   }
-}
-
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-	if(huart == &huart1){
-		HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
-	}
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
+  read_code();
   if (htim == &htim3){
     
-    if (BLDC.control_mode == fan_mode && BLDC.fan_mode_enable){
+    if (BLDC.control_param.control_mode == fan_mode && !BLDC.control_param.position_setting_enabled){
       static uint16_t fan_mode_counter = 0;
       ++fan_mode_counter;
      
-      if (fan_mode_counter >= BLDC.fan_mode_commutation_period){
+      if (fan_mode_counter >= BLDC.control_param.fan_mode_commutation_period){
         fan_mode_counter = 0;
         set_next_state(&BLDC);
-        commute(&BLDC, BLDC.state);
+        commute(&BLDC, BLDC.state_param.state);
       }
     }
     
-    else if (BLDC.control_mode == emf_mode){
-      BLDC.ticks_for_next_commute--;
-      BLDC.ticks_threshold--;
-      
-//      if (BLDC.ticks_for_next_commute == 0){
-//        update_state(&BLDC);
-//        set_next_state(&BLDC);
-//        commute(&BLDC, BLDC.state);
-//      }
-//      else 
-        if (BLDC.ticks_threshold <= 0){
-        BLDC.control_mode = fan_mode;
-        BLDC.started = false;
-			
-      }
-    }   
+    else if (BLDC.control_param.control_mode == emf_mode && BLDC.state_param.hall_delay_started){
+      static uint16_t hall_mode_counter = 0;
+      ++hall_mode_counter;
+     
+      if (hall_mode_counter >= BLDC.state_param.ticks_for_next_commute){ 
+        hall_mode_counter = 0;
+        set_next_state(&BLDC);
+        commute(&BLDC, BLDC.state_param.state);
+        BLDC.state_param.hall_delay_started = false;
+      }      
+    }
+
   }
 }
 /* USER CODE END 1 */
