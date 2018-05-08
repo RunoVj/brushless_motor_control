@@ -391,27 +391,29 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     
     __HAL_TIM_SET_COUNTER(htim, 0);
 
-   
-    update_state(&BLDC);
-    BLDC.state_param.hall_delay_started = true;      
+    // disable commutation in position setting mode
+    if (!BLDC.control_param.position_setting_enabled){
+      update_state(&BLDC);
+      BLDC.state_param.hall_delay_started = true;         
+    }
 
-    
+    float delay = BLDC.control_param.fan_mode_commutation_period / 255.0; 
     switch (htim->Channel){
       case HAL_TIM_ACTIVE_CHANNEL_1:
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_2:
-        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_a_tick*2/3);
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_a_tick*delay);
         BLDC.state_param.ticks_threshold = BLDC.state_param.phase_a_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_3:
-        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_b_tick*2/3);
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_b_tick*delay);
         BLDC.state_param.ticks_threshold = BLDC.state_param.phase_b_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_4:
-        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_c_tick*2/3);
+        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_c_tick*delay);
         BLDC.state_param.ticks_threshold = BLDC.state_param.phase_c_tick;
       break;
       
