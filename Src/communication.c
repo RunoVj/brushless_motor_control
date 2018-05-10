@@ -14,6 +14,8 @@ void parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length)
 { 
   static uint8_t old_state, new_state;
   if (IsChecksumm8bCorrect(message, length)){
+    
+    
     BLDC->control_param.pwm_duty = message[VMA_DEV_REQUEST_VELOCITY1];
     update_velocity(BLDC, BLDC->control_param.pwm_duty );          
     

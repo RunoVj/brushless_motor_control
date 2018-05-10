@@ -173,7 +173,7 @@
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>commute_counter</ItemText>
+          <ItemText>huart1</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>
