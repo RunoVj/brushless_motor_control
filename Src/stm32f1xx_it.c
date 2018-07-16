@@ -39,6 +39,7 @@
 #include "brushless_motor.h"
 #include "communication.h"
 #include "usart.h"
+#include "svpwm.h"
 
 uint8_t rx_byte;
 uint8_t rx_counter;
@@ -226,7 +227,7 @@ void SysTick_Handler(void)
   }
   
   ++led_counter;
-  HAL_ADC_Start_IT(&hadc1);
+//  HAL_ADC_Start_IT(&hadc1);
   
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -278,7 +279,40 @@ void TIM2_IRQHandler(void)
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
-
+	
+	
+//	static uint16_t freq;
+//	if (freq >= BLDC.control_param.fan_mode_commutation_period){
+//		freq = 0;
+//		static uint16_t angle = 0;
+//		if (angle == 361) {
+//			angle = 0;
+//		}
+	
+		uint16_t angle = BLDC.control_param.fan_mode_commutation_period * 2;
+		static unsigned int PWM[3];
+		static uint16_t amplitude;
+		amplitude	= BLDC.control_param.pwm_duty / 3;
+		if (amplitude != 0) {
+			HAL_GPIO_WritePin(BRIDGE_A_EN_GPIO_Port, BRIDGE_A_EN_Pin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(BRIDGE_B_EN_GPIO_Port, BRIDGE_B_EN_Pin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(BRIDGE_C_EN_GPIO_Port, BRIDGE_C_EN_Pin, GPIO_PIN_SET);
+		}
+		else {
+			HAL_GPIO_WritePin(BRIDGE_A_EN_GPIO_Port, BRIDGE_A_EN_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(BRIDGE_B_EN_GPIO_Port, BRIDGE_B_EN_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(BRIDGE_C_EN_GPIO_Port, BRIDGE_C_EN_Pin, GPIO_PIN_RESET);
+		}
+		uvector_state(angle, amplitude, PWM, 1999, 1);
+		
+		update_pwm_duty(A, PWM[a]);
+		update_pwm_duty(B, PWM[b]);
+		update_pwm_duty(C, PWM[c]);
+		
+//		++angle;
+//	}
+//	++freq;
+	
   /* USER CODE END TIM2_IRQn 1 */
 }
 
@@ -292,7 +326,6 @@ void TIM3_IRQHandler(void)
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
-
   /* USER CODE END TIM3_IRQn 1 */
 }
 
@@ -396,10 +429,6 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
       update_state(&BLDC);
       BLDC.state_param.hall_delay_started = true;         
     }
-<<<<<<< HEAD
-=======
-   
->>>>>>> 5dbd18b38a12cc2a181ef1a9069635f12ebaf7cb
 
     float delay = BLDC.control_param.fan_mode_commutation_period / 255.0; 
     switch (htim->Channel){
@@ -407,29 +436,17 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_2:
-<<<<<<< HEAD
         BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_a_tick*delay);
-=======
-        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_a_tick/2);
->>>>>>> 5dbd18b38a12cc2a181ef1a9069635f12ebaf7cb
         BLDC.state_param.ticks_threshold = BLDC.state_param.phase_a_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_3:
-<<<<<<< HEAD
         BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_b_tick*delay);
-=======
-        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_b_tick/2);
->>>>>>> 5dbd18b38a12cc2a181ef1a9069635f12ebaf7cb
         BLDC.state_param.ticks_threshold = BLDC.state_param.phase_b_tick;
       break;
       
       case HAL_TIM_ACTIVE_CHANNEL_4:
-<<<<<<< HEAD
         BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_c_tick*delay);
-=======
-        BLDC.state_param.ticks_for_next_commute = (uint16_t)(BLDC.state_param.phase_c_tick/2);
->>>>>>> 5dbd18b38a12cc2a181ef1a9069635f12ebaf7cb
         BLDC.state_param.ticks_threshold = BLDC.state_param.phase_c_tick;
       break;
       
@@ -442,33 +459,33 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
-  read_code();
-  if (htim == &htim3){
-    
-    if (BLDC.control_param.control_mode == fan_mode && !BLDC.control_param.position_setting_enabled){
-      static uint16_t fan_mode_counter = 0;
-      ++fan_mode_counter;
-     
-      if (fan_mode_counter >= BLDC.control_param.fan_mode_commutation_period){
-        fan_mode_counter = 0;
-        set_next_state(&BLDC);
-        commute(&BLDC, BLDC.state_param.state);
-      }
-    }
-    
-    else if (BLDC.control_param.control_mode == emf_mode && BLDC.state_param.hall_delay_started){
-      static uint16_t hall_mode_counter = 0;
-      ++hall_mode_counter;
-     
-      if (hall_mode_counter >= BLDC.state_param.ticks_for_next_commute){ 
-        hall_mode_counter = 0;
-        set_next_state(&BLDC);
-        commute(&BLDC, BLDC.state_param.state);
-        BLDC.state_param.hall_delay_started = false;
-      }      
-    }
+//  read_code();
+//  if (htim == &htim3){
+//    
+//    if (BLDC.control_param.control_mode == fan_mode && !BLDC.control_param.position_setting_enabled){
+//      static uint16_t fan_mode_counter = 0;
+//      ++fan_mode_counter;
+//     
+//      if (fan_mode_counter >= BLDC.control_param.fan_mode_commutation_period){
+//        fan_mode_counter = 0;
+//        set_next_state(&BLDC);
+//        commute(&BLDC, BLDC.state_param.state);
+//      }
+//    }
+//    
+//    else if (BLDC.control_param.control_mode == emf_mode && BLDC.state_param.hall_delay_started){
+//      static uint16_t hall_mode_counter = 0;
+//      ++hall_mode_counter;
+//     
+//      if (hall_mode_counter >= BLDC.state_param.ticks_for_next_commute){ 
+//        hall_mode_counter = 0;
+//        set_next_state(&BLDC);
+//        commute(&BLDC, BLDC.state_param.state);
+//        BLDC.state_param.hall_delay_started = false;
+//      }      
+//    }
 
-  }
+//  }
 }
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
