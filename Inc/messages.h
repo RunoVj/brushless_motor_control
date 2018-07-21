@@ -2,31 +2,36 @@
 #define __MESSAGES_H
 
 /* STM send requests and VMA send responses */
-#define VMA_DEV_REQUEST_LENGTH              7
+#define REQUEST_LENGTH   12  
+#define RESPONSE_LENGTH  10
+#define RECEIVE_TIMEOUT  5
 
-#define RECEIVE_TIMEOUT                     5
+#include "stdint.h"
 
-#define VMA_DEV_REQUEST_AA1                 0
-#define VMA_DEV_REQUEST_AA2                 1   // address
-#define VMA_DEV_REQUEST_ADDRESS             2   // position setting
-#define VMA_DEV_REQUEST_SETTING             3   // position
-#define VMA_DEV_REQUEST_VELOCITY1           4   // pwm duty
-#define VMA_DEV_REQUEST_VELOCITY2           5   // period frequency
-#define VMA_DEV_REQUEST_CHECKSUM            6
+struct Request
+{
+	uint8_t AA;
+	uint8_t type; // 0x01
+	uint8_t address;
+	uint8_t update_base_vector; // true or false
+	uint8_t position_setting; // enabling of position_setting
+	uint16_t angle; // angle - 0..359;
+	uint8_t velocity;
+	uint8_t frequency;
+	int16_t outrunning_angle;
+	uint8_t crc;
+};
 
-#define VMA_DEV_RESPONSE_LENGTH             10
-
-#define VMA_DEV_RESPONSE_AA                 0
-#define VMA_DEV_RESPONSE_ADDRESS            1
-#define VMA_DEV_RESPONSE_ERRORS             2
-#define VMA_DEV_RESPONSE_CURRENT_1H         3
-#define VMA_DEV_RESPONSE_CURRENT_1L         4
-#define VMA_DEV_RESPONSE_CURRENT_2H         5   // current gray code
-#define VMA_DEV_RESPONSE_CURRENT_2L         6   // current state
-#define VMA_DEV_RESPONSE_VELOCITY1	        7   // period for next commutation
-#define VMA_DEV_RESPONSE_VELOCITY2          8
-#define VMA_DEV_RESPONSE_CHECKSUM           9
-
-#define VMA_NUMBER                          8
+struct Response
+{
+    uint8_t AA;
+    uint8_t type;
+    uint8_t address;
+    uint8_t state;
+    uint8_t position_code;
+    uint16_t cur_angle;
+    uint16_t current;
+    uint8_t crc;
+};
 
 #endif //__MESSAGES_H

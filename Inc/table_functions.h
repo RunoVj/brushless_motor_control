@@ -1,7 +1,7 @@
 #ifndef __table_functions_H
 #define __table_functions_H
 
-const int FULL_SIN[361] = 
+const int FULL_SIN[360] = 
 {
 0,
 4,   
@@ -362,8 +362,7 @@ const int FULL_SIN[361] =
 -18   ,
 -13   ,
 -9   ,
--4   ,
-0   
+-4
 };
 
 #endif // __table_functions_H

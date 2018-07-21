@@ -4,60 +4,46 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-#define MAX_LOG_INFO_BUF  2
-
+#define MAX_PWM_DUTY 2999
 #define MAX_CURRENT 4000
 #define STARTED_FILTER 6
+#define MAX_BASE_VECTORS_NUMB 8
 
-
-typedef enum { fan_mode, emf_mode, hall_mode } ControlMode;
+typedef enum { none, emf, hall } FeedbackSensors;
 typedef enum { clockwise, counterclockwise } RotationDir;
+typedef enum {stopped, rotated, overcurrent} WorkingState;
 typedef enum { A, B, C } Phase;
 
 typedef struct {
-  struct {
-    uint8_t address;   
-  } settings; // parameters unchangeable during working
-  
-  struct {
-    bool started;
-    bool hall_delay_started;
+	uint8_t address;   
+	bool started;
+	
+	
+	bool update_base_vectors;
+	uint16_t base_vectors[MAX_BASE_VECTORS_NUMB];
+	
+	uint16_t cur_angle;
+	int16_t outrunning_angle;
+	uint16_t next_angle;
+	
+	uint8_t phase_a_state;
+	uint8_t phase_b_state;
+	uint8_t phase_c_state;
 
-    uint8_t state;
-    uint8_t next_state;
-    uint8_t position_code;
-    
-    uint8_t successful_predictions;
-    
-    uint16_t phase_a_tick;
-    uint16_t phase_b_tick;
-    uint16_t phase_c_tick; 
+	uint8_t state;
+	uint8_t position_code;
+	
+	uint16_t current;
 
-    uint8_t phase_a_state;
-    uint8_t phase_b_state;
-    uint8_t phase_c_state;
-    
-    uint16_t ticks_for_next_commute;
-    int32_t ticks_threshold;
-
-    
-    uint16_t current;
-  } state_param;
-
-  struct {
-    bool position_setting_enabled;
-    ControlMode control_mode;
-    RotationDir rotation_dir;
-    
-    uint8_t velocity;
-    uint16_t pwm_duty;    
-    uint16_t fan_mode_commutation_period;
-    
-  } control_param;
-
+	bool position_setting_enabled;
+	FeedbackSensors sensors;
+	RotationDir rotation_dir;
+	
+	uint8_t velocity;
+	uint16_t pwm_duty;    
+	uint16_t fan_mode_commutation_period;
  
 } BrushlessMotor;
-
 
 
 extern BrushlessMotor BLDC;
@@ -66,19 +52,15 @@ void init(BrushlessMotor *BLDC);
 
 uint8_t read_code(void);
 
-void commute(BrushlessMotor *BLDC, uint8_t state);
+void motor_enable(void);
+void motor_disable(void);
+
 void update_pwm_duty(Phase phase, uint16_t duty);
 
-void set_state(BrushlessMotor *BLDC, uint8_t state);
-void set_next_state(BrushlessMotor *BLDC);
-
-void update_state(BrushlessMotor *BLDC);
 void update_velocity(BrushlessMotor *BLDC, uint8_t velocity);
-void update_pwm_in_active_channel(BrushlessMotor *BLDC, uint8_t state);
 
-uint8_t convert_next_state(BrushlessMotor *BLDC, uint8_t code);
-uint8_t get_next_state(BrushlessMotor *BLDC);
+void set_angle(BrushlessMotor *BLDC, uint16_t angle, uint16_t amplitude, uint8_t dir);
+void calculate_next_angle(BrushlessMotor *BLDC);
 
-bool did_it_started(BrushlessMotor *BLDC);
 
 #endif /*__brushless_motor_H */

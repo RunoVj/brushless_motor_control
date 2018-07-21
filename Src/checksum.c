@@ -47,13 +47,16 @@ bool IsChecksumm8bCorrect(uint8_t *msg, uint16_t length)
 	
 	crcGot = msg[length-1] ;
 	
-		for(i=0; i < length - 1; i++){
-			crc ^= msg[i];
-		}
+	for (i = 0; i < length - 1; ++i) {
+		crc ^= msg[i];
+	}
 	
-	if(crc == crcGot)
+	if (crc == crcGot) {
 		return 1;
-	else return 0;
+	}
+	else {
+		return 0;
+	}
 }
 
 void AddChecksumm8b(uint8_t *msg, uint16_t length)
