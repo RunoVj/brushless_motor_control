@@ -10,6 +10,7 @@ BrushlessMotor BLDC;
 void init(BrushlessMotor *BLDC)
 {
   BLDC->address = 0x01;
+	read_code();
 }
 
 void motor_enable()

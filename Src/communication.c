@@ -38,10 +38,11 @@ void send_package(BrushlessMotor *BLDC)
 	resp.current = BLDC->current;
 	resp.cur_angle = BLDC->cur_angle;
 
-  AddChecksumm8b(msg_buf, REQUEST_LENGTH);
+  AddChecksumm8b(msg_buf, RESPONSE_LENGTH);
   
-	memcpy((void*)&msg_buf, (void*)&resp, RESPONSE_LENGTH);
+	memcpy((void*)msg_buf, (void*)&resp, RESPONSE_LENGTH);
 	
   HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_SET);
-  HAL_UART_Transmit_DMA(&huart1, msg_buf, REQUEST_LENGTH);
+	
+  HAL_UART_Transmit_IT(&huart1, msg_buf, RESPONSE_LENGTH);
 }

@@ -106,7 +106,7 @@ int main(void)
 	
 
 
-	SysTick->CTRL = 0;
+//	SysTick->CTRL = 0;
 //	HAL_TIM_Base_Start(&htim3);
 //	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);  // phase C  
 //  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);  // phase B

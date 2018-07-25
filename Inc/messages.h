@@ -8,6 +8,8 @@
 
 #include "stdint.h"
 
+#pragma pack(push, 1)
+
 struct Request
 {
 	uint8_t AA;
@@ -16,12 +18,15 @@ struct Request
 	uint8_t update_base_vector; // true or false
 	uint8_t position_setting; // enabling of position_setting
 	uint16_t angle; // angle - 0..359;
-	uint8_t velocity;
+	int8_t velocity;
 	uint8_t frequency;
 	int16_t outrunning_angle;
 	uint8_t crc;
 };
 
+#pragma pack(pop)
+
+#pragma pack(push, 1)
 struct Response
 {
     uint8_t AA;
@@ -33,5 +38,7 @@ struct Response
     uint16_t current;
     uint8_t crc;
 };
+
+#pragma pack(pop)
 
 #endif //__MESSAGES_H
