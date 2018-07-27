@@ -9,6 +9,8 @@
 #define STARTED_FILTER 6
 #define MAX_BASE_VECTORS_NUMB 8
 
+#define CORRECTION_PWM_DUTY 250
+
 typedef enum { none, emf, hall } FeedbackSensors;
 typedef enum { clockwise, counterclockwise } RotationDir;
 typedef enum {stopped, rotated, overcurrent} WorkingState;
@@ -22,9 +24,9 @@ typedef struct {
 	bool update_base_vectors;
 	uint16_t base_vectors[MAX_BASE_VECTORS_NUMB];
 	
-	uint16_t cur_angle;
+	int16_t cur_angle;
 	int16_t outrunning_angle;
-	uint16_t next_angle;
+	int16_t next_angle;
 	
 	uint8_t phase_a_state;
 	uint8_t phase_b_state;
@@ -39,7 +41,7 @@ typedef struct {
 	FeedbackSensors sensors;
 	RotationDir rotation_dir;
 	
-	uint8_t velocity;
+	int8_t velocity;
 	uint16_t pwm_duty;    
 	uint16_t fan_mode_commutation_period;
  
@@ -57,7 +59,7 @@ void motor_disable(void);
 
 void update_pwm_duty(Phase phase, uint16_t duty);
 
-void update_velocity(BrushlessMotor *BLDC, uint8_t velocity);
+void update_velocity(BrushlessMotor *BLDC, int8_t velocity);
 
 void set_angle(BrushlessMotor *BLDC, uint16_t angle, uint16_t amplitude, uint8_t dir);
 void calculate_next_angle(BrushlessMotor *BLDC);

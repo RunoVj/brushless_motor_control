@@ -56,16 +56,17 @@ uint8_t read_code()
   return BLDC.position_code;
 }
 
-void update_velocity(BrushlessMotor* BLDC, uint8_t velocity)
+void update_velocity(BrushlessMotor* BLDC, int8_t velocity)
 {
-  if (velocity <= 128){
-     BLDC->rotation_dir = clockwise;
-     BLDC->pwm_duty = (128 - velocity)*23;
-  }
+  if (velocity > 0) {
+		BLDC->rotation_dir = clockwise;
+  	BLDC->pwm_duty = velocity*23;
+	}
   else {
-     BLDC->rotation_dir = counterclockwise;
-     BLDC->pwm_duty = (velocity - 128)*23;
+    BLDC->rotation_dir = counterclockwise;
+		BLDC->pwm_duty = (-velocity)*23;
   }
+
 }
 
 void set_angle(BrushlessMotor *BLDC, uint16_t angle, uint16_t amplitude, uint8_t dir)
@@ -76,6 +77,7 @@ void set_angle(BrushlessMotor *BLDC, uint16_t angle, uint16_t amplitude, uint8_t
 		update_pwm_duty(A, PWM[a]);
 		update_pwm_duty(B, PWM[b]);
 		update_pwm_duty(C, PWM[c]);	
+		motor_enable();
 	}
 	else {
 		motor_disable();
@@ -84,5 +86,13 @@ void set_angle(BrushlessMotor *BLDC, uint16_t angle, uint16_t amplitude, uint8_t
 
 void calculate_next_angle(BrushlessMotor *BLDC)
 {
+	if (BLDC->rotation_dir) {
 		BLDC->next_angle = (BLDC->base_vectors[BLDC->position_code] +	90 + BLDC->outrunning_angle) % 360;
+	}
+	else {
+		BLDC->next_angle = (BLDC->base_vectors[BLDC->position_code] -	90 - BLDC->outrunning_angle) % 360;
+		if (BLDC->next_angle < 0) {
+			BLDC->next_angle = (359 + BLDC->next_angle);
+		}
+	}
 }

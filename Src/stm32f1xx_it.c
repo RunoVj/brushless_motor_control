@@ -329,7 +329,7 @@ void TIM1_UP_IRQHandler(void)
 			if (BLDC.cur_angle >= 360) {
 				BLDC.cur_angle = 0;
 			}
-			set_angle(&BLDC, BLDC.cur_angle, BLDC.pwm_duty, BLDC.rotation_dir);
+			set_angle(&BLDC, BLDC.cur_angle, CORRECTION_PWM_DUTY, 1);
 		}
 		else {
 			if (BLDC.position_setting_enabled) {
@@ -338,11 +338,26 @@ void TIM1_UP_IRQHandler(void)
 			}
 			else {
 				if (BLDC.started) {
+					static uint16_t timeout;
 					set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
+					++timeout;
+					if (timeout == 0x09FF) {
+						BLDC.started = false;
+						timeout = 0;
+					}
 				}
 				else {
-					BLDC.next_angle = (BLDC.cur_angle + BLDC.fan_mode_commutation_period) % 360;
+					if (BLDC.rotation_dir) {
+						BLDC.next_angle = (BLDC.cur_angle + BLDC.fan_mode_commutation_period) % 360;
+					}
+					else {
+						BLDC.next_angle = (BLDC.cur_angle - BLDC.fan_mode_commutation_period) % 360;
+						if (BLDC.next_angle < 0) {
+							BLDC.next_angle = (359 + BLDC.next_angle);
+						}
+					}
 					set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
+					BLDC.cur_angle = BLDC.next_angle;
 				}
 			}
 		}
