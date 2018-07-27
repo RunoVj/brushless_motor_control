@@ -226,6 +226,7 @@ void EXTI1_IRQHandler(void)
   /* USER CODE BEGIN EXTI1_IRQn 1 */
 	read_code();
 	BLDC.started = true;
+	BLDC.timeout = 0;
 	if (BLDC.update_base_vectors) {
 		BLDC.base_vectors[BLDC.position_code] = BLDC.cur_angle;
 	}
@@ -248,6 +249,7 @@ void EXTI2_IRQHandler(void)
   /* USER CODE BEGIN EXTI2_IRQn 1 */
 	read_code();
 	BLDC.started = true;
+	BLDC.timeout = 0;
 	if (BLDC.update_base_vectors) {
 		BLDC.base_vectors[BLDC.position_code] = BLDC.cur_angle;
 	}
@@ -269,12 +271,14 @@ void EXTI3_IRQHandler(void)
   /* USER CODE BEGIN EXTI3_IRQn 1 */
 	read_code();
 	BLDC.started = true;
+	BLDC.timeout = 0;
 	if (BLDC.update_base_vectors) {
 		BLDC.base_vectors[BLDC.position_code] = BLDC.cur_angle;
 	}
 	else {
 		calculate_next_angle(&BLDC);
 	}
+
   /* USER CODE END EXTI3_IRQn 1 */
 }
 
@@ -338,12 +342,11 @@ void TIM1_UP_IRQHandler(void)
 			}
 			else {
 				if (BLDC.started) {
-					static uint16_t timeout;
 					set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
-					++timeout;
-					if (timeout == 0x09FF) {
+					BLDC.timeout++;
+					if (BLDC.timeout == 0x0FFF) {
 						BLDC.started = false;
-						timeout = 0;
+						BLDC.timeout = 0;
 					}
 				}
 				else {

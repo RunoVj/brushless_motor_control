@@ -36,6 +36,8 @@ typedef struct {
 	uint8_t position_code;
 	
 	uint16_t current;
+	
+	uint16_t timeout;
 
 	bool position_setting_enabled;
 	FeedbackSensors sensors;
