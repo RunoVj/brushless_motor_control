@@ -368,15 +368,16 @@ void TIM1_UP_IRQHandler(void)
 		if (_1KHz_counter == 3) {
 			_1KHz_counter = 0;
 			// start 1KHz 
+			// communication cycle
 			if (package_started) {
 				++communication_counter;
 				if (communication_counter == package_timeout) {
 					communication_counter = 0;
 					
 					if (uart1_package_received){
-						uart1_package_received = false;      
-						parse_package(&BLDC, uart_receive_buf, REQUEST_LENGTH);
-						if (uart1_package_sended){
+						uart1_package_received = false;   
+					  bool parsing_is_ok = parse_package(&BLDC, uart_receive_buf, REQUEST_LENGTH);
+						if (uart1_package_sended && parsing_is_ok){
 							send_package(&BLDC); 
 						}          
 					}
@@ -386,6 +387,7 @@ void TIM1_UP_IRQHandler(void)
 				}
 			}
 				
+			// blinking
 			if (led_counter == 250) {
 				led_counter = 0;
 				HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);

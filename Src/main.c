@@ -47,6 +47,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "brushless_motor.h"
+#include "flash_config.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -104,36 +105,23 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 	
-
-
-//	SysTick->CTRL = 0;
-//	HAL_TIM_Base_Start(&htim3);
-//	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);  // phase C  
-//  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);  // phase B
 	
 	HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);  // phase A
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);  // phase C  
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);  // phase B
 
-	
-	
-	htim1.Instance->CCR1 = 1000;
-	htim3.Instance->CCR1 = 1000;
-	htim3.Instance->CCR2 = 1000;
 
   HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
 	
+	FLASH_ReadSettings(&BLDC);
   init(&BLDC);
-  BLDC.sensors = hall;
-  BLDC.position_setting_enabled = false;
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+  while (1) {
 
   /* USER CODE END WHILE */
 

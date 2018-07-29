@@ -11,21 +11,26 @@
 
 uint8_t msg_buf[RESPONSE_LENGTH];
 
-void parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length)
+bool parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length)
 { 
 	if (IsChecksumm8bCorrect(message, length)) {
 		struct Request req;
 		memcpy((void*)&req, (void*)message, length);
-		BLDC->update_base_vectors = req.update_base_vector;
-		BLDC->position_setting_enabled = req.position_setting;
-		if (req.position_setting) {
-			BLDC->next_angle = req.angle;
+		
+		if (req.address == BLDC->address) {
+			BLDC->update_base_vectors = req.update_base_vector;
+			BLDC->position_setting_enabled = req.position_setting;
+			if (req.position_setting) {
+				BLDC->next_angle = req.angle;
+			}
+			BLDC->velocity = req.velocity;
+			BLDC->fan_mode_commutation_period = req.frequency;
+			update_velocity(BLDC, BLDC->velocity);
+			BLDC->outrunning_angle = req.outrunning_angle;
+			return true;
 		}
-		BLDC->velocity = req.velocity;
-		BLDC->fan_mode_commutation_period = req.frequency;
-		update_velocity(BLDC, BLDC->velocity);
-		BLDC->outrunning_angle = req.outrunning_angle;
-  }    
+  }
+	return false;
 }
 
 void send_package(BrushlessMotor *BLDC)

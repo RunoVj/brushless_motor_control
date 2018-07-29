@@ -11,7 +11,6 @@
 
 #define CORRECTION_PWM_DUTY 250
 
-typedef enum { none, emf, hall } FeedbackSensors;
 typedef enum { clockwise, counterclockwise } RotationDir;
 typedef enum {stopped, rotated, overcurrent} WorkingState;
 typedef enum { A, B, C } Phase;
@@ -19,7 +18,6 @@ typedef enum { A, B, C } Phase;
 typedef struct {
 	uint8_t address;   
 	bool started;
-	
 	
 	bool update_base_vectors;
 	uint16_t base_vectors[MAX_BASE_VECTORS_NUMB];
@@ -40,7 +38,6 @@ typedef struct {
 	uint16_t timeout;
 
 	bool position_setting_enabled;
-	FeedbackSensors sensors;
 	RotationDir rotation_dir;
 	
 	int8_t velocity;
