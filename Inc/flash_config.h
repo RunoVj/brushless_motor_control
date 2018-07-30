@@ -15,7 +15,7 @@
 // size of struct mast be a multiple of 4 byte (32 bits)
 typedef struct { 
 	uint8_t address;
-	uint8_t nothing1;
+	uint8_t update_firmware;
 	uint16_t base_vectors[MAX_BASE_VECTORS_NUMB]; // 8*2 byte
 	uint16_t nothing2;
 	
@@ -26,6 +26,6 @@ typedef struct {
 #define SETTINGS_WORDS sizeof(BLDCConfig)/4
 	
 void FLASH_ReadSettings(BrushlessMotor *BLDC);
-void FLASH_WriteSettings(BrushlessMotor *BLDC);
+void FLASH_WriteSettings(BrushlessMotor *BLDC, bool update_firmware);
 
 #endif // __flash_config_H

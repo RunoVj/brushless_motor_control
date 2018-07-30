@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include "brushless_motor.h"
+#include "flash_config.h"
 #include "communication.h"
 #include "checksum.h"
 
@@ -39,12 +40,13 @@ bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
 bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
 {
 	if (req->forse_setting || req->old_address == BLDC->address) {
-		if (req->update_firmware) {
-			// TODO -> write to flash update flag
-		}
-		if (req->new_address != BLDC->address) {
-			// write to FLASH new address
+		if (req->update_firmware || req->new_address != BLDC->address) {
 			BLDC->address = req->new_address;
+			FLASH_WriteSettings(BLDC, req->update_firmware);
+			if (req->update_firmware) {
+				motor_disable();
+				// go to bootloader
+			}
 		}
 	}
 	return false; // DO NOT ANSWER TO CONFIG PACKAGE!
