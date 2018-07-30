@@ -1,8 +1,8 @@
 #ifndef __flash_config_H
 #define __flash_config_H
 
-#define CONFIG_PAGE_NUMB 127
-#define CONFIG_PAGE_ADDR 0x0801FC00
+#define CONFIG_PAGE_NUMB 31
+#define CONFIG_PAGE_ADDR 0x08007C00
 
 #include "stdint.h"
 #include "stm32f1xx_hal.h"

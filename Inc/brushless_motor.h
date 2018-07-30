@@ -4,6 +4,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 
+#define COMMUTATION_TIMEOUT 0x0FFF
 #define MAX_PWM_DUTY 2999
 #define MAX_CURRENT 4000
 #define STARTED_FILTER 6
