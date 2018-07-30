@@ -37,6 +37,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "brushless_motor.h"
+#include "messages.h"
 #include "communication.h"
 #include "usart.h"
 
@@ -201,9 +202,6 @@ void SysTick_Handler(void)
   HAL_SYSTICK_IRQHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
   
-
-  
-
   /* USER CODE END SysTick_IRQn 1 */
 }
 
@@ -328,6 +326,7 @@ void TIM1_UP_IRQHandler(void)
 	if (_3KHz_counter == 8) {
 		_3KHz_counter = 0;
 		// start 3KHz
+		// if update base vectors mode enabled
 		if (BLDC.update_base_vectors) {
 			BLDC.cur_angle++;
 			if (BLDC.cur_angle >= 360) {
@@ -335,20 +334,24 @@ void TIM1_UP_IRQHandler(void)
 			}
 			set_angle(&BLDC, BLDC.cur_angle, CORRECTION_PWM_DUTY, 1);
 		}
+		// if update base vectors mode disabled
 		else {
 			if (BLDC.position_setting_enabled) {
 				BLDC.cur_angle = BLDC.next_angle;
 				set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
 			}
+			// if angle control mode disabled - i.e. speed control mode
 			else {
+				// if the interruption of the sensors occurred during the timeout
 				if (BLDC.started) {
 					set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
 					BLDC.timeout++;
-					if (BLDC.timeout == 0x0FFF) {
+					if (BLDC.timeout == COMMUTATION_TIMEOUT) {
 						BLDC.started = false;
 						BLDC.timeout = 0;
 					}
 				}
+				// otherwise - synchronous mode
 				else {
 					if (BLDC.rotation_dir) {
 						BLDC.next_angle = (BLDC.cur_angle + BLDC.fan_mode_commutation_period) % 360;
@@ -368,15 +371,17 @@ void TIM1_UP_IRQHandler(void)
 		if (_1KHz_counter == 3) {
 			_1KHz_counter = 0;
 			// start 1KHz 
+			// communication cycle
+			// if first byte was received
 			if (package_started) {
 				++communication_counter;
 				if (communication_counter == package_timeout) {
 					communication_counter = 0;
 					
 					if (uart1_package_received){
-						uart1_package_received = false;      
-						parse_package(&BLDC, uart_receive_buf, REQUEST_LENGTH);
-						if (uart1_package_sended){
+						uart1_package_received = false;   
+					  bool parsing_is_ok = parse_package(&BLDC, uart_receive_buf, uart_pack_size);
+						if (uart1_package_sended && parsing_is_ok){
 							send_package(&BLDC); 
 						}          
 					}
@@ -386,6 +391,7 @@ void TIM1_UP_IRQHandler(void)
 				}
 			}
 				
+			// blinking
 			if (led_counter == 250) {
 				led_counter = 0;
 				HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
@@ -430,8 +436,16 @@ void USART1_IRQHandler(void)
 /* USER CODE BEGIN 1 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(rx_counter == 0){
+	if (rx_counter == 0) {
     package_started = true;
+	}
+	else if (rx_counter == 1) {
+		if (rx_byte == CONFIG_REQUEST_TYPE) {
+			uart_pack_size = CONFIG_REQUEST_LENGTH;
+		}
+		else {
+			uart_pack_size = REQUEST_LENGTH;
+		}
 	}
   
 	uart_receive_buf[rx_counter++] = rx_byte;

@@ -11,21 +11,60 @@
 
 uint8_t msg_buf[RESPONSE_LENGTH];
 
-void parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length)
+bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
+{
+	if (req->address == BLDC->address) {
+		BLDC->update_base_vectors = req->update_base_vector;
+		BLDC->position_setting_enabled = req->position_setting;
+		if (req->position_setting) {
+			BLDC->next_angle = req->angle;
+		}
+		BLDC->velocity = req->velocity;
+		BLDC->fan_mode_commutation_period = req->frequency;
+		update_velocity(BLDC, BLDC->velocity);
+		BLDC->outrunning_angle = req->outrunning_angle;
+		return true;
+	}	
+	return false;
+}
+
+//    uint8_t AA;
+//    uint8_t type; // 0x02
+//    uint8_t update_firmware; // (bool) set new address or update firmware even if old address doesn't equal BLDC address
+//    uint8_t forse_setting; // (bool) set new address even if old address doesn't equal BLDC address
+//    uint8_t old_address;
+//    uint8_t new_address;
+//    uint8_t crc;
+
+bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
+{
+	if (req->forse_setting || req->old_address == BLDC->address) {
+		if (req->update_firmware) {
+			// TODO -> write to flash update flag
+		}
+		if (req->new_address != BLDC->address) {
+			// write to FLASH new address
+			BLDC->address = req->new_address;
+		}
+	}
+	return false; // DO NOT ANSWER TO CONFIG PACKAGE!
+}
+
+bool parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length)
 { 
 	if (IsChecksumm8bCorrect(message, length)) {
-		struct Request req;
-		memcpy((void*)&req, (void*)message, length);
-		BLDC->update_base_vectors = req.update_base_vector;
-		BLDC->position_setting_enabled = req.position_setting;
-		if (req.position_setting) {
-			BLDC->next_angle = req.angle;
+		if (length == REQUEST_LENGTH) {
+			struct Request req;
+			memcpy((void*)&req, (void*)message, length);
+			return parse_normal_request(BLDC, &req);
 		}
-		BLDC->velocity = req.velocity;
-		BLDC->fan_mode_commutation_period = req.frequency;
-		update_velocity(BLDC, BLDC->velocity);
-		BLDC->outrunning_angle = req.outrunning_angle;
-  }    
+		else if (length == CONFIG_REQUEST_LENGTH) {
+			struct ConfigRequest req;
+			memcpy((void*)&req, (void*)message, length);
+			return parse_config_request(BLDC, &req);
+		}
+  }
+	return false;
 }
 
 void send_package(BrushlessMotor *BLDC)
