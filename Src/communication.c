@@ -38,7 +38,9 @@ bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
 			FLASH_WriteSettings(BLDC, req->update_firmware);
 			if (req->update_firmware) {
 				motor_disable();
-				jump(BOOTLOADER_ADDR);
+				// go to bootloader
+				HAL_NVIC_SystemReset(); 
+//				jump(BOOTLOADER_ADDR);
 			}
 		}
 	}
