@@ -6,6 +6,8 @@
 
 #include <string.h>
 #include "brushless_motor.h"
+#include "flash_config.h"
+#include "bootloader.h"
 #include "communication.h"
 #include "checksum.h"
 
@@ -28,23 +30,18 @@ bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
 	return false;
 }
 
-//    uint8_t AA;
-//    uint8_t type; // 0x02
-//    uint8_t update_firmware; // (bool) set new address or update firmware even if old address doesn't equal BLDC address
-//    uint8_t forse_setting; // (bool) set new address even if old address doesn't equal BLDC address
-//    uint8_t old_address;
-//    uint8_t new_address;
-//    uint8_t crc;
-
 bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
 {
 	if (req->forse_setting || req->old_address == BLDC->address) {
-		if (req->update_firmware) {
-			// TODO -> write to flash update flag
-		}
-		if (req->new_address != BLDC->address) {
-			// write to FLASH new address
+		if (req->update_firmware || req->new_address != BLDC->address) {
 			BLDC->address = req->new_address;
+			FLASH_WriteSettings(BLDC, req->update_firmware);
+			if (req->update_firmware) {
+				motor_disable();
+				// go to bootloader
+				HAL_NVIC_SystemReset(); 
+//				jump(BOOTLOADER_ADDR);
+			}
 		}
 	}
 	return false; // DO NOT ANSWER TO CONFIG PACKAGE!
@@ -76,10 +73,9 @@ void send_package(BrushlessMotor *BLDC)
 	resp.position_code = BLDC->position_code;
 	resp.current = BLDC->current;
 	resp.cur_angle = BLDC->cur_angle;
-
-  AddChecksumm8b(msg_buf, RESPONSE_LENGTH);
   
-	memcpy((void*)msg_buf, (void*)&resp, RESPONSE_LENGTH);
+	memcpy((void*)msg_buf, (void*)&resp, RESPONSE_LENGTH - 1);
+	AddChecksumm8b(msg_buf, RESPONSE_LENGTH);
 	
   HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_SET);
 	

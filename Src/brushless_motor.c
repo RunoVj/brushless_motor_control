@@ -9,7 +9,6 @@ BrushlessMotor BLDC;
 
 void init(BrushlessMotor *BLDC)
 {
-  BLDC->address = 0x01;
 	BLDC->position_setting_enabled = false;
 }
 
