@@ -56,6 +56,7 @@ bool package_started = true; //to start receiving
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef hdma_adc1;
 extern ADC_HandleTypeDef hadc1;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
@@ -281,6 +282,24 @@ void EXTI3_IRQHandler(void)
 }
 
 /**
+* @brief This function handles DMA1 channel1 global interrupt.
+*/
+void DMA1_Channel1_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
+
+  /* USER CODE END DMA1_Channel1_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_adc1);
+  /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
+	uint32_t sum = 0;
+	for (uint8_t i = 0; i < ADC_BUF_SIZE; ++i) {
+		sum += adc_buf[i];
+	}
+	BLDC.current = sum / ADC_BUF_SIZE;
+  /* USER CODE END DMA1_Channel1_IRQn 1 */
+}
+
+/**
 * @brief This function handles DMA1 channel4 global interrupt.
 */
 void DMA1_Channel4_IRQHandler(void)
@@ -290,7 +309,6 @@ void DMA1_Channel4_IRQHandler(void)
   /* USER CODE END DMA1_Channel4_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_usart1_tx);
   /* USER CODE BEGIN DMA1_Channel4_IRQn 1 */
-
   /* USER CODE END DMA1_Channel4_IRQn 1 */
 }
 
@@ -304,7 +322,7 @@ void ADC1_2_IRQHandler(void)
   /* USER CODE END ADC1_2_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc1);
   /* USER CODE BEGIN ADC1_2_IRQn 1 */
-  BLDC.current = HAL_ADC_GetValue(&hadc1);
+//  BLDC.current = HAL_ADC_GetValue(&hadc1);
 
   /* USER CODE END ADC1_2_IRQn 1 */
 }
@@ -397,7 +415,6 @@ void TIM1_UP_IRQHandler(void)
 				HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
 			}
 			++led_counter;
-			//  HAL_ADC_Start_IT(&hadc1);	
 		} // end 1KHz
 		++_1KHz_counter;
 	} // end 3KHz

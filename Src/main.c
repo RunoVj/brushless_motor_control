@@ -83,12 +83,10 @@ int main(void)
   /* MCU Configuration----------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	shift_interrupt_vectors(APPLICATION_ADDR);
-	__enable_irq();
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+	shift_interrupt_vectors(APPLICATION_ADDR);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -112,6 +110,8 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);  // phase A
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);  // phase C  
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);  // phase B
+	
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADC_BUF_SIZE);
 
 
   HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);

@@ -10,6 +10,8 @@
 #define STARTED_FILTER 6
 #define MAX_BASE_VECTORS_NUMB 8
 
+#define ADC_BUF_SIZE 255
+
 #define CORRECTION_PWM_DUTY 250
 
 typedef enum { clockwise, counterclockwise } RotationDir;
@@ -49,6 +51,7 @@ typedef struct {
 
 
 extern BrushlessMotor BLDC;
+extern uint16_t adc_buf[ADC_BUF_SIZE];
 
 void init(BrushlessMotor *BLDC);
 

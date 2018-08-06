@@ -6,6 +6,7 @@
 #include "svpwm.h"
 
 BrushlessMotor BLDC;
+uint16_t adc_buf[ADC_BUF_SIZE];
 
 void init(BrushlessMotor *BLDC)
 {
