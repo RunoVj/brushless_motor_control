@@ -16,6 +16,10 @@ uint8_t msg_buf[RESPONSE_LENGTH];
 bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
 {
 	if (req->address == BLDC->address) {
+		// if vectors updating complited
+		if (BLDC->update_base_vectors && !req->update_base_vector) {
+			FLASH_WriteSettings(BLDC, false);
+		}
 		BLDC->update_base_vectors = req->update_base_vector;
 		BLDC->position_setting_enabled = req->position_setting;
 		if (req->position_setting) {
@@ -25,6 +29,9 @@ bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
 		BLDC->fan_mode_commutation_period = req->frequency;
 		update_velocity(BLDC, BLDC->velocity);
 		BLDC->outrunning_angle = req->outrunning_angle;
+		
+		// recalculate next angles
+		update_angles(BLDC);
 		return true;
 	}	
 	return false;

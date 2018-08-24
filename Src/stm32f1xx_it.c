@@ -197,12 +197,37 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   HAL_SYSTICK_IRQHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-  
+	static uint16_t communication_counter;
+  static uint16_t led_counter;
+	// communication cycle
+	// if first byte was received
+	if (package_started) {
+		++communication_counter;
+		if (communication_counter == package_timeout) {
+			communication_counter = 0;
+			if (uart1_package_received){
+				uart1_package_received = false;   
+				bool parsing_is_ok = parse_package(&BLDC, uart_receive_buf, uart_pack_size);
+				if (uart1_package_sended && parsing_is_ok){
+					send_package(&BLDC); 
+				}          
+			}
+			rx_counter = 0;
+			HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
+			package_started = false;
+		}
+	}
+		
+	// blinking
+	if (led_counter == 250) {
+		led_counter = 0;
+		HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
+	}
+	++led_counter;
   /* USER CODE END SysTick_IRQn 1 */
 }
 
@@ -230,7 +255,7 @@ void EXTI1_IRQHandler(void)
 		BLDC.base_vectors[BLDC.position_code] = BLDC.cur_angle;
 	}
 	else {
-		calculate_next_angle(&BLDC);
+		set_next_angle(&BLDC);
 	}
 	
   /* USER CODE END EXTI1_IRQn 1 */
@@ -253,7 +278,7 @@ void EXTI2_IRQHandler(void)
 		BLDC.base_vectors[BLDC.position_code] = BLDC.cur_angle;
 	}
 	else {
-		calculate_next_angle(&BLDC);
+		set_next_angle(&BLDC);
 	}
   /* USER CODE END EXTI2_IRQn 1 */
 }
@@ -275,7 +300,7 @@ void EXTI3_IRQHandler(void)
 		BLDC.base_vectors[BLDC.position_code] = BLDC.cur_angle;
 	}
 	else {
-		calculate_next_angle(&BLDC);
+		set_next_angle(&BLDC);
 	}
 
   /* USER CODE END EXTI3_IRQn 1 */
@@ -337,11 +362,9 @@ void TIM1_UP_IRQHandler(void)
   /* USER CODE END TIM1_UP_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_IRQn 1 */
-	static uint8_t _1KHz_counter, _3KHz_counter; // this cycle - 24KHz
-	static uint16_t communication_counter;
-  static uint16_t led_counter;
+	static uint8_t _3KHz_counter;
 
-	if (_3KHz_counter == 8) {
+	if (_3KHz_counter == PWM_FREQUENCY/3000) {
 		_3KHz_counter = 0;
 		// start 3KHz
 		// if update base vectors mode enabled
@@ -350,19 +373,19 @@ void TIM1_UP_IRQHandler(void)
 			if (BLDC.cur_angle >= 360) {
 				BLDC.cur_angle = 0;
 			}
-			set_angle(&BLDC, BLDC.cur_angle, CORRECTION_PWM_DUTY, 1);
+			set_angle(BLDC.cur_angle, CORRECTION_PWM_DUTY, 1);
 		}
 		// if update base vectors mode disabled
 		else {
 			if (BLDC.position_setting_enabled) {
 				BLDC.cur_angle = BLDC.next_angle;
-				set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
+				set_angle(BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
 			}
 			// if angle control mode disabled - i.e. speed control mode
 			else {
 				// if the interruption of the sensors occurred during the timeout
 				if (BLDC.started) {
-					set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
+					//set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
 					BLDC.timeout++;
 					if (BLDC.timeout == COMMUTATION_TIMEOUT) {
 						BLDC.started = false;
@@ -380,43 +403,11 @@ void TIM1_UP_IRQHandler(void)
 							BLDC.next_angle = (359 + BLDC.next_angle);
 						}
 					}
-					set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
+					set_angle(BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
 					BLDC.cur_angle = BLDC.next_angle;
 				}
 			}
 		}
-		
-		if (_1KHz_counter == 3) {
-			_1KHz_counter = 0;
-			// start 1KHz 
-			// communication cycle
-			// if first byte was received
-			if (package_started) {
-				++communication_counter;
-				if (communication_counter == package_timeout) {
-					communication_counter = 0;
-					
-					if (uart1_package_received){
-						uart1_package_received = false;   
-					  bool parsing_is_ok = parse_package(&BLDC, uart_receive_buf, uart_pack_size);
-						if (uart1_package_sended && parsing_is_ok){
-							send_package(&BLDC); 
-						}          
-					}
-					rx_counter = 0;
-					HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
-					package_started = false;
-				}
-			}
-				
-			// blinking
-			if (led_counter == 250) {
-				led_counter = 0;
-				HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
-			}
-			++led_counter;
-		} // end 1KHz
-		++_1KHz_counter;
 	} // end 3KHz
 	++_3KHz_counter;
   /* USER CODE END TIM1_UP_IRQn 1 */
