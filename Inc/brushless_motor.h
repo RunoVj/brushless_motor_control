@@ -4,7 +4,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 
-#define COMMUTATION_TIMEOUT 0x0FFF
+#define COMMUTATION_TIMEOUT 0x00FF
 
 #define MAX_PWM_DUTY 999
 #define PWM_FREQUENCY (72000000/(MAX_PWM_DUTY+1))
