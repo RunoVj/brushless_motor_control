@@ -24,9 +24,9 @@ typedef struct {
 	bool started;
 	bool impulse_overcurrent;
 	bool overcurrent;
-	uint16_t high_threshold;
-	uint16_t low_threshold;
-	uint16_t average_threshold;
+	uint16_t high_impulse_current_threshold;
+	uint16_t low_impulse_current_threshold;
+	uint16_t average_current_threshold;
 	
 	bool update_base_vectors;
 	

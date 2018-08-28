@@ -13,6 +13,10 @@ void FLASH_ReadSettings(BrushlessMotor *BLDC)
 	}
 	
 	BLDC->address = config.address;
+	BLDC->high_impulse_current_threshold = config.high_impulse_current_threshold;
+	BLDC->low_impulse_current_threshold = config.low_impulse_current_threshold;
+	BLDC->average_current_threshold = config.average_current_threshold;
+	
 	for (uint8_t i = 0; i < MAX_BASE_VECTORS_NUMB; ++i) {
 		BLDC->base_vectors[i] = config.base_vectors[i];
 	}
@@ -23,6 +27,9 @@ void FLASH_WriteSettings(BrushlessMotor *BLDC, bool update_firmware)
 	BLDCConfig config;
 	config.address = BLDC->address;
 	config.update_firmware = update_firmware;
+	config.high_impulse_current_threshold = BLDC->high_impulse_current_threshold;
+	config.low_impulse_current_threshold = BLDC->low_impulse_current_threshold;
+	config.average_current_threshold = BLDC->average_current_threshold;
 	for (uint8_t i = 0; i < MAX_BASE_VECTORS_NUMB; ++i) {
 		config.base_vectors[i] = BLDC->base_vectors[i];
 	}

@@ -15,7 +15,9 @@ typedef struct {
 	uint8_t address;
 	uint8_t update_firmware;
 	uint16_t base_vectors[MAX_BASE_VECTORS_NUMB]; // 8*2 byte
-	uint16_t nothing2;
+	uint16_t high_impulse_current_threshold;
+	uint16_t low_impulse_current_threshold;
+	uint16_t average_current_threshold;
 	
 } BLDCConfig;
 

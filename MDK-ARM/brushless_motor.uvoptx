@@ -150,18 +150,18 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>42</LineNumber>
+          <LineNumber>5</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134229720</Address>
+          <Address>134219056</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Src\communication.c</Filename>
+          <Filename>..\Src\flash_config.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\brushless_motor\../Src/communication.c\42</Expression>
+          <Expression>\\brushless_motor\../Src/flash_config.c\5</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -178,30 +178,15 @@
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>req</ItemText>
+          <ItemText>msg_buf</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>msg_buf</ItemText>
-        </Ww>
-        <Ww>
-          <count>4</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>timeout,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>5</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>uart1_package_sended</ItemText>
-        </Ww>
-        <Ww>
-          <count>6</count>
-          <WinNumber>1</WinNumber>
           <ItemText>hadc1</ItemText>
         </Ww>
         <Ww>
-          <count>7</count>
+          <count>4</count>
           <WinNumber>1</WinNumber>
           <ItemText>huart1</ItemText>
         </Ww>
