@@ -53,6 +53,8 @@ DMA_HandleTypeDef hdma_adc1;
 /* ADC1 init function */
 void MX_ADC1_Init(void)
 {
+  ADC_AnalogWDGConfTypeDef AnalogWDGConfig;
+  ADC_ChannelConfTypeDef sConfig;
 
     /**Common config 
     */
@@ -64,6 +66,28 @@ void MX_ADC1_Init(void)
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configure Analog WatchDog 1 
+    */
+  AnalogWDGConfig.WatchdogMode = ADC_ANALOGWATCHDOG_SINGLE_REG;
+  AnalogWDGConfig.HighThreshold = 3686;
+  AnalogWDGConfig.LowThreshold = 409;
+  AnalogWDGConfig.Channel = ADC_CHANNEL_8;
+  AnalogWDGConfig.ITMode = ENABLE;
+  if (HAL_ADC_AnalogWDGConfig(&hadc1, &AnalogWDGConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configure Regular Channel 
+    */
+  sConfig.Channel = ADC_CHANNEL_8;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
@@ -107,7 +131,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     __HAL_LINKDMA(adcHandle,DMA_Handle,hdma_adc1);
 
     /* ADC1 interrupt Init */
-    HAL_NVIC_SetPriority(ADC1_2_IRQn, 2, 0);
+    HAL_NVIC_SetPriority(ADC1_2_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(ADC1_2_IRQn);
   /* USER CODE BEGIN ADC1_MspInit 1 */
 
@@ -143,6 +167,11 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 } 
 
 /* USER CODE BEGIN 1 */
+void update_current_thresholds(ADC_HandleTypeDef *hadc, uint16_t high_threshold, uint16_t low_threshold)
+{
+	hadc->Instance->HTR = high_threshold;
+	hadc->Instance->LTR = low_threshold;
+}
 
 /* USER CODE END 1 */
 

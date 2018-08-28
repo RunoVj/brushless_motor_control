@@ -86,13 +86,14 @@ void set_angle(uint16_t angle, uint16_t amplitude, uint8_t dir)
 
 void set_next_angle(BrushlessMotor *BLDC)
 {
-	if (BLDC->pwm_duty != 0) {
+	if (BLDC->pwm_duty != 0 && !BLDC->impulse_overcurrent) {
 		update_pwm_duty(A, BLDC->pwm_duties[BLDC->position_code][a]);
 		update_pwm_duty(B, BLDC->pwm_duties[BLDC->position_code][b]);
 		update_pwm_duty(C, BLDC->pwm_duties[BLDC->position_code][c]);	
 		motor_enable();		
 	}
 	else {
+		BLDC->impulse_overcurrent = false;
 		motor_disable();
 	}	
 }

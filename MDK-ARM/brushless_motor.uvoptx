@@ -150,9 +150,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>20</LineNumber>
+          <LineNumber>42</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134229212</Address>
+          <Address>134229720</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -161,7 +161,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\Src\communication.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\brushless_motor\../Src/communication.c\20</Expression>
+          <Expression>\\brushless_motor\../Src/communication.c\42</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -198,7 +198,12 @@
         <Ww>
           <count>6</count>
           <WinNumber>1</WinNumber>
-          <ItemText>&lt;parsing_is_ok</ItemText>
+          <ItemText>hadc1</ItemText>
+        </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>huart1</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -215,7 +220,7 @@
       <DebugFlag>
         <trace>0</trace>
         <periodic>1</periodic>
-        <aLwin>1</aLwin>
+        <aLwin>0</aLwin>
         <aCover>0</aCover>
         <aSer1>0</aSer1>
         <aSer2>0</aSer2>

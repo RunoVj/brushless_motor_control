@@ -316,7 +316,7 @@ void DMA1_Channel1_IRQHandler(void)
   /* USER CODE END DMA1_Channel1_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_adc1);
   /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
-	uint32_t sum = 0;
+	uint64_t sum = 0;
 	for (uint8_t i = 0; i < ADC_BUF_SIZE; ++i) {
 		sum += adc_buf[i];
 	}
@@ -347,7 +347,7 @@ void ADC1_2_IRQHandler(void)
   /* USER CODE END ADC1_2_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc1);
   /* USER CODE BEGIN ADC1_2_IRQn 1 */
-//  BLDC.current = HAL_ADC_GetValue(&hadc1);
+	BLDC.impulse_overcurrent = true;
 
   /* USER CODE END ADC1_2_IRQn 1 */
 }

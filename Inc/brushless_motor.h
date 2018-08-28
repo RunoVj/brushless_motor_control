@@ -9,10 +9,9 @@
 #define MAX_PWM_DUTY 999
 #define PWM_FREQUENCY (72000000/(MAX_PWM_DUTY+1))
 #define PWM_RESIZE_COEF (MAX_PWM_DUTY/128)
-#define MAX_CURRENT 4000
 #define MAX_BASE_VECTORS_NUMB 8
 
-#define ADC_BUF_SIZE 255
+#define ADC_BUF_SIZE 100
 
 #define CORRECTION_PWM_DUTY 400
 
@@ -23,8 +22,14 @@ typedef enum { A, B, C } Phase;
 typedef struct {
 	uint8_t address;   
 	bool started;
+	bool impulse_overcurrent;
+	bool overcurrent;
+	uint16_t high_threshold;
+	uint16_t low_threshold;
+	uint16_t average_threshold;
 	
 	bool update_base_vectors;
+	
 	// for iteration used position code (gray code)
 	uint16_t base_vectors[MAX_BASE_VECTORS_NUMB];
 	int16_t next_angles[MAX_BASE_VECTORS_NUMB];
@@ -42,7 +47,6 @@ typedef struct {
 	uint8_t position_code;
 	
 	uint16_t current;
-	
 	uint16_t timeout;
 
 	bool position_setting_enabled;

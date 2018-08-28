@@ -40,6 +40,9 @@ bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
 bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
 {
 	if (req->forse_setting || req->old_address == BLDC->address) {
+		BLDC->high_threshold = req->high_threshold;
+		BLDC->low_threshold = req->low_threshold;
+		BLDC->average_threshold = req->average_threshold;
 		if (req->update_firmware || req->new_address != BLDC->address) {
 			BLDC->address = req->new_address;
 			FLASH_WriteSettings(BLDC, req->update_firmware);
