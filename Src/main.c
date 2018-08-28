@@ -86,7 +86,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-	shift_interrupt_vectors(APPLICATION_ADDR);
+	//shift_interrupt_vectors(APPLICATION_ADDR);
   /* USER CODE END Init */
 
   /* Configure the system clock */

@@ -13,8 +13,8 @@ void uvector_state(uint16_t angle, uint16_t  amplitude, uint16_t* PWM, uint16_t 
 		angle_in_sector = angle - ( 60*sector ) ;
 		table_value_1 = FULL_SIN[60 - angle_in_sector]; 
 		table_value_2 = FULL_SIN[angle_in_sector];
-		table_value_1 = (amplitude*table_value_1) >> 7; // equals multiply by 2 (aproximatley 1.713) 
-		table_value_2 = (amplitude*table_value_2) >> 7;
+		table_value_1 = (amplitude*table_value_1) >> 8; // equals multiply by 2 (aproximatley 1.713) 
+		table_value_2 = (amplitude*table_value_2) >> 8;
 		T[1] = table_value_1;
 		T[2] = table_value_2;
 		if (T[1] > pwm_limit) 
@@ -24,10 +24,12 @@ void uvector_state(uint16_t angle, uint16_t  amplitude, uint16_t* PWM, uint16_t 
 		if (T[2] > pwm_limit)  
 		{
 			T[2] =  pwm_limit;
-		}                                                      
-		T[1] = T[1] >> 1; 													
-		T[2] = T[2] >> 1;
+		}
 		T[0] = (pwm_limit - T[1] - T[2]) >> 1;
+		T[1] = T[1]; 													
+		T[2] = T[2];
+		
+		
 		
 		if (direction) {
 			switch (sector) {

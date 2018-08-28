@@ -10,12 +10,11 @@
 #define PWM_FREQUENCY (72000000/(MAX_PWM_DUTY+1))
 #define PWM_RESIZE_COEF (MAX_PWM_DUTY/128)
 #define MAX_CURRENT 4000
-#define STARTED_FILTER 6
 #define MAX_BASE_VECTORS_NUMB 8
 
 #define ADC_BUF_SIZE 255
 
-#define CORRECTION_PWM_DUTY 200
+#define CORRECTION_PWM_DUTY 400
 
 typedef enum { clockwise, counterclockwise } RotationDir;
 typedef enum {stopped, rotated, overcurrent} WorkingState;
