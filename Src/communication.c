@@ -10,6 +10,7 @@
 #include "bootloader.h"
 #include "communication.h"
 #include "checksum.h"
+#include "adc.h"
 
 uint8_t msg_buf[RESPONSE_LENGTH];
 
@@ -42,6 +43,7 @@ bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
 	if (req->forse_setting || req->old_address == BLDC->address) {
 		BLDC->high_impulse_current_threshold = req->high_threshold;
 		BLDC->low_impulse_current_threshold = req->low_threshold;
+		update_current_thresholds(&hadc1, req->high_threshold, req->low_threshold);
 		BLDC->average_current_threshold = req->average_threshold;
 		
 		BLDC->address = req->new_address;
@@ -88,5 +90,5 @@ void send_package(BrushlessMotor *BLDC)
 	
   HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_SET);
 	
-  HAL_UART_Transmit_IT(&huart1, msg_buf, RESPONSE_LENGTH);
+  HAL_UART_Transmit_DMA(&huart1, msg_buf, RESPONSE_LENGTH);
 }
