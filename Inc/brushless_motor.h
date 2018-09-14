@@ -13,7 +13,7 @@
 
 #define ADC_BUF_SIZE 100
 
-#define CORRECTION_PWM_DUTY 400
+#define CORRECTION_PWM_DUTY MAX_PWM_DUTY/6
 
 typedef enum { clockwise, counterclockwise } RotationDir;
 typedef enum {stopped, rotated, overcurrent} WorkingState;
