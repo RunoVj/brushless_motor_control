@@ -258,6 +258,8 @@ void EXTI1_IRQHandler(void)
 		set_next_angle(&BLDC);
 	}
 	
+	calculate_speed(&BLDC);
+	
   /* USER CODE END EXTI1_IRQn 1 */
 }
 
@@ -280,6 +282,10 @@ void EXTI2_IRQHandler(void)
 	else {
 		set_next_angle(&BLDC);
 	}
+	
+	calculate_speed(&BLDC);
+	
+	
   /* USER CODE END EXTI2_IRQn 1 */
 }
 
@@ -303,6 +309,8 @@ void EXTI3_IRQHandler(void)
 		set_next_angle(&BLDC);
 	}
 
+	calculate_speed(&BLDC);
+	
   /* USER CODE END EXTI3_IRQn 1 */
 }
 
@@ -361,6 +369,10 @@ void TIM1_UP_IRQHandler(void)
   /* USER CODE END TIM1_UP_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_IRQn 1 */
+	if (BLDC.started) {
+		BLDC.speed_counter[BLDC.cur_sector]++;
+	}
+	
 	static uint8_t _3KHz_counter;
 	if (_3KHz_counter == PWM_FREQUENCY/3000) {
 		_3KHz_counter = 0;

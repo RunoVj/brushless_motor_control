@@ -12,6 +12,7 @@
 #define MAX_BASE_VECTORS_NUMB 8
 
 #define ADC_BUF_SIZE 100
+#define SPEED_BUF_SIZE 42
 
 #define CORRECTION_PWM_DUTY MAX_PWM_DUTY/6
 
@@ -24,9 +25,15 @@ typedef struct {
 	bool started;
 	bool impulse_overcurrent;
 	bool overcurrent;
+	
 	uint16_t high_impulse_current_threshold;
 	uint16_t low_impulse_current_threshold;
 	uint16_t average_current_threshold;
+	
+	uint8_t cur_sector;
+	uint16_t speed_k;
+	uint16_t speed_counter[SPEED_BUF_SIZE];
+	uint16_t speed_period;
 	
 	bool update_base_vectors;
 	
@@ -68,6 +75,8 @@ uint8_t read_code(void);
 
 void motor_enable(void);
 void motor_disable(void);
+
+void calculate_speed(BrushlessMotor *BLDC);
 
 void update_angles(BrushlessMotor *BLDC);
 void update_pwm_duty(Phase phase, uint16_t duty);

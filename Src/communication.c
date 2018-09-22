@@ -30,6 +30,7 @@ bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
 		BLDC->fan_mode_commutation_period = req->frequency;
 		update_velocity(BLDC, BLDC->velocity);
 		BLDC->outrunning_angle = req->outrunning_angle;
+		BLDC->speed_k = req->speed_k;
 		
 		// recalculate next angles
 		update_angles(BLDC);
@@ -84,6 +85,7 @@ void send_package(BrushlessMotor *BLDC)
 	resp.position_code = BLDC->position_code;
 	resp.current = BLDC->current;
 	resp.cur_angle = BLDC->cur_angle;
+	resp.speed_period = BLDC->speed_period;
   
 	memcpy((void*)msg_buf, (void*)&resp, RESPONSE_LENGTH - 1);
 	AddChecksumm8b(msg_buf, RESPONSE_LENGTH);

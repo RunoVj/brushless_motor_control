@@ -110,7 +110,6 @@ int main(void)
 	
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, ADC_BUF_SIZE);
 
-
   HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
 	
 	FLASH_ReadSettings(&BLDC);

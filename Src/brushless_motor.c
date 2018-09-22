@@ -11,6 +11,8 @@ uint16_t adc_buf[ADC_BUF_SIZE];
 void init(BrushlessMotor *BLDC)
 {
 	BLDC->position_setting_enabled = false;
+	BLDC->speed_period = 0;
+	BLDC->cur_sector = 0;
 }
 
 void motor_enable()
@@ -111,14 +113,27 @@ void update_angles(BrushlessMotor *BLDC)
 int16_t calculate_next_angle(BrushlessMotor *BLDC, uint8_t position_code)
 {
 	int16_t next_angle = 0;
+	static uint16_t speed_addition = 0;
 	if (BLDC->rotation_dir) {
 		next_angle = (BLDC->base_vectors[position_code] +	90 + BLDC->outrunning_angle);
+		//
+		if (BLDC->speed_period > 0 && BLDC->speed_period < 500) {
+			speed_addition = BLDC->speed_k/BLDC->speed_period;
+			next_angle += speed_addition;
+		}
+		//
 		if ((BLDC->next_angle) > 359) {
 			BLDC->next_angle = (BLDC->next_angle) - 359;
 		}
 	}
 	else {
 		next_angle = (BLDC->base_vectors[position_code] -	90 - BLDC->outrunning_angle);
+		//
+		if (BLDC->speed_period > 0 && BLDC->speed_period < 500) {
+			speed_addition = BLDC->speed_k/BLDC->speed_period;
+			next_angle += speed_addition;
+		}
+		//
 		if ((next_angle) < 0) {
 				(next_angle) = 359 + (next_angle);
 		}
@@ -130,5 +145,18 @@ void calculate_next_angles(BrushlessMotor *BLDC)
 {
 	for (uint8_t i = 0; i < MAX_BASE_VECTORS_NUMB; ++i) {
 		BLDC->next_angles[i] = calculate_next_angle(BLDC, i);
+	}
+}
+
+void calculate_speed(BrushlessMotor *BLDC)
+{
+	BLDC->cur_sector = (BLDC->cur_sector + 1) % SPEED_BUF_SIZE;
+	if (BLDC->cur_sector == 0) {
+		uint64_t tmp = 0;
+		for (int i = 0; i < SPEED_BUF_SIZE; ++i) {
+			tmp += BLDC->speed_counter[i];
+			BLDC->speed_counter[i] = 0;
+		}
+		BLDC->speed_period = tmp/SPEED_BUF_SIZE;
 	}
 }
