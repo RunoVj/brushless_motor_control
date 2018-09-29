@@ -131,7 +131,7 @@ int16_t calculate_next_angle(BrushlessMotor *BLDC, uint8_t position_code)
 		//
 		if (BLDC->speed_period > 0 && BLDC->speed_period < 500) {
 			speed_addition = BLDC->speed_k/BLDC->speed_period;
-			next_angle += speed_addition;
+			next_angle -= speed_addition;
 		}
 		//
 		if ((next_angle) < 0) {
