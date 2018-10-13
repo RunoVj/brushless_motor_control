@@ -6,7 +6,7 @@
 
 #define COMMUTATION_TIMEOUT 0x00FF
 
-#define MAX_PWM_DUTY 999
+#define MAX_PWM_DUTY 1499
 #define PWM_FREQUENCY (72000000/(MAX_PWM_DUTY+1))
 #define PWM_RESIZE_COEF (MAX_PWM_DUTY/128)
 #define MAX_BASE_VECTORS_NUMB 8
@@ -23,6 +23,7 @@ typedef enum { A, B, C } Phase;
 typedef struct {
 	uint8_t address;   
 	bool started;
+	bool set_next_angle;
 	bool impulse_overcurrent;
 	bool overcurrent;
 	

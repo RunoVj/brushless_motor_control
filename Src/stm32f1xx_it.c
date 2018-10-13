@@ -255,7 +255,8 @@ void EXTI1_IRQHandler(void)
 		BLDC.base_vectors[BLDC.position_code] = BLDC.cur_angle;
 	}
 	else {
-		set_next_angle(&BLDC);
+		BLDC.set_next_angle = true;
+//		set_next_angle(&BLDC);
 	}
 	
 	calculate_speed(&BLDC);
@@ -280,7 +281,8 @@ void EXTI2_IRQHandler(void)
 		BLDC.base_vectors[BLDC.position_code] = BLDC.cur_angle;
 	}
 	else {
-		set_next_angle(&BLDC);
+		BLDC.set_next_angle = true;
+//		set_next_angle(&BLDC);
 	}
 	
 	calculate_speed(&BLDC);
@@ -306,7 +308,8 @@ void EXTI3_IRQHandler(void)
 		BLDC.base_vectors[BLDC.position_code] = BLDC.cur_angle;
 	}
 	else {
-		set_next_angle(&BLDC);
+		BLDC.set_next_angle = true;
+//		set_next_angle(&BLDC);
 	}
 
 	calculate_speed(&BLDC);
@@ -386,37 +389,36 @@ void TIM1_UP_IRQHandler(void)
 			set_angle(BLDC.cur_angle, CORRECTION_PWM_DUTY, 1);
 		}
 		// if update base vectors mode disabled
+		else if (BLDC.position_setting_enabled) {
+			BLDC.cur_angle = BLDC.next_angle;
+			set_angle(BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
+		}
+		// if BLDC started = the interruption of the sensors occurred during the timeout
+		else if (BLDC.started) {
+			//set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
+			BLDC.timeout++;
+			if (BLDC.set_next_angle) {
+				BLDC.set_next_angle = false;
+				set_next_angle(&BLDC);
+			}
+			if (BLDC.timeout == COMMUTATION_TIMEOUT) {
+				BLDC.started = false;
+				BLDC.timeout = 0;
+			}
+		}
+		// otherwise - synchronous mode
 		else {
-			if (BLDC.position_setting_enabled) {
-				BLDC.cur_angle = BLDC.next_angle;
-				set_angle(BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
+			if (BLDC.rotation_dir) {
+				BLDC.next_angle = (BLDC.cur_angle + BLDC.fan_mode_commutation_period) % 360;
 			}
-			// if angle control mode disabled - i.e. speed control mode
 			else {
-				// if the interruption of the sensors occurred during the timeout
-				if (BLDC.started) {
-					//set_angle(&BLDC, BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
-					BLDC.timeout++;
-					if (BLDC.timeout == COMMUTATION_TIMEOUT) {
-						BLDC.started = false;
-						BLDC.timeout = 0;
-					}
-				}
-				// otherwise - synchronous mode
-				else {
-					if (BLDC.rotation_dir) {
-						BLDC.next_angle = (BLDC.cur_angle + BLDC.fan_mode_commutation_period) % 360;
-					}
-					else {
-						BLDC.next_angle = (BLDC.cur_angle - BLDC.fan_mode_commutation_period) % 360;
-						if (BLDC.next_angle < 0) {
-							BLDC.next_angle = (359 + BLDC.next_angle);
-						}
-					}
-					set_angle(BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
-					BLDC.cur_angle = BLDC.next_angle;
+				BLDC.next_angle = (BLDC.cur_angle - BLDC.fan_mode_commutation_period) % 360;
+				if (BLDC.next_angle < 0) {
+					BLDC.next_angle = (359 + BLDC.next_angle);
 				}
 			}
+			set_angle(BLDC.next_angle, BLDC.pwm_duty, BLDC.rotation_dir);
+			BLDC.cur_angle = BLDC.next_angle;
 		}
 	} // end 3KHz
 	++_3KHz_counter;

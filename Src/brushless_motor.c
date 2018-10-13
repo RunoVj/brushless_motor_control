@@ -11,6 +11,7 @@ uint16_t adc_buf[ADC_BUF_SIZE];
 void init(BrushlessMotor *BLDC)
 {
 	BLDC->position_setting_enabled = false;
+	BLDC->set_next_angle = false;
 	BLDC->speed_period = 0;
 	BLDC->cur_sector = 0;
 }
