@@ -69,7 +69,6 @@ void update_velocity(BrushlessMotor* BLDC, int8_t velocity)
     BLDC->rotation_dir = counterclockwise;
 		BLDC->pwm_duty = (-velocity)*PWM_RESIZE_COEF;
   }
-
 }
 
 void set_angle(uint16_t angle, uint16_t amplitude, uint8_t dir)
@@ -119,7 +118,7 @@ int16_t calculate_next_angle(BrushlessMotor *BLDC, uint8_t position_code)
 		next_angle = (BLDC->base_vectors[position_code] +	90 + BLDC->outrunning_angle);
 		//
 		if (BLDC->speed_period > 0 && BLDC->speed_period < 500) {
-			speed_addition = BLDC->speed_k/BLDC->speed_period;
+			speed_addition = BLDC->speed_k[BLDC->rotation_dir]/BLDC->speed_period;
 			next_angle += speed_addition;
 		}
 		//
@@ -131,7 +130,7 @@ int16_t calculate_next_angle(BrushlessMotor *BLDC, uint8_t position_code)
 		next_angle = (BLDC->base_vectors[position_code] -	90 - BLDC->outrunning_angle);
 		//
 		if (BLDC->speed_period > 0 && BLDC->speed_period < 500) {
-			speed_addition = BLDC->speed_k/BLDC->speed_period;
+			speed_addition = BLDC->speed_k[BLDC->rotation_dir]/BLDC->speed_period;
 			next_angle -= speed_addition;
 		}
 		//

@@ -21,9 +21,14 @@ typedef struct {
 	
 } BLDCConfig;
 
+typedef struct {
+	uint16_t speed_k[2];
+} BLDCAdditionalConfig;
+
 #pragma pack(pop)
 
 #define SETTINGS_WORDS sizeof(BLDCConfig)/4
+#define ADDITIONAL_SETTINGS_WORDS sizeof(BLDCAdditionalConfig)/4
 	
 void FLASH_ReadSettings(BrushlessMotor *BLDC);
 void FLASH_WriteSettings(BrushlessMotor *BLDC, bool update_firmware);

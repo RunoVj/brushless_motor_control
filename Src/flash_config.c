@@ -20,6 +20,18 @@ void FLASH_ReadSettings(BrushlessMotor *BLDC)
 	for (uint8_t i = 0; i < MAX_BASE_VECTORS_NUMB; ++i) {
 		BLDC->base_vectors[i] = config.base_vectors[i];
 	}
+	
+	BLDCAdditionalConfig add_config;
+	dest_addr = (void *)&add_config;
+	
+	for (uint16_t i = 0; i < ADDITIONAL_SETTINGS_WORDS; ++i) {
+		*dest_addr = *(__IO uint32_t*)source_addr;
+		source_addr++;
+		dest_addr++;
+	}
+	
+	BLDC->speed_k[clockwise] = add_config.speed_k[clockwise];
+	BLDC->speed_k[counterclockwise] = add_config.speed_k[counterclockwise];
 }
 
 void FLASH_WriteSettings(BrushlessMotor *BLDC, bool update_firmware)
@@ -30,6 +42,11 @@ void FLASH_WriteSettings(BrushlessMotor *BLDC, bool update_firmware)
 	config.high_impulse_current_threshold = BLDC->high_impulse_current_threshold;
 	config.low_impulse_current_threshold = BLDC->low_impulse_current_threshold;
 	config.average_current_threshold = BLDC->average_current_threshold;
+	
+	BLDCAdditionalConfig add_config;
+	add_config.speed_k[clockwise] = BLDC->speed_k[clockwise];
+	add_config.speed_k[counterclockwise] = BLDC->speed_k[counterclockwise];	
+	
 	for (uint8_t i = 0; i < MAX_BASE_VECTORS_NUMB; ++i) {
 		config.base_vectors[i] = BLDC->base_vectors[i];
 	}
@@ -49,6 +66,13 @@ void FLASH_WriteSettings(BrushlessMotor *BLDC, bool update_firmware)
 	// write page
 	uint32_t *source_addr = (void *)&config;
 	uint32_t *dest_addr = (uint32_t *)CONFIG_PAGE_ADDR;
+	for (uint8_t i = 0; i < SETTINGS_WORDS; ++i) {
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)dest_addr, *source_addr);
+		source_addr++;
+		dest_addr++;
+	}
+	
+	source_addr = (void *)&add_config;
 	for (uint8_t i = 0; i < SETTINGS_WORDS; ++i) {
 		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)dest_addr, *source_addr);
 		source_addr++;

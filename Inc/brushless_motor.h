@@ -21,7 +21,7 @@ typedef enum {stopped, rotated, overcurrent} WorkingState;
 typedef enum { A, B, C } Phase;
 
 typedef struct {
-	uint8_t address;   
+	uint8_t address;
 	bool started;
 	bool set_next_angle;
 	bool impulse_overcurrent;
@@ -32,7 +32,7 @@ typedef struct {
 	uint16_t average_current_threshold;
 	
 	uint8_t cur_sector;
-	uint16_t speed_k;
+	uint16_t speed_k[2];
 	uint16_t speed_counter[SPEED_BUF_SIZE];
 	uint16_t speed_period;
 	

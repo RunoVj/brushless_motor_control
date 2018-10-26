@@ -30,7 +30,7 @@ bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
 		BLDC->fan_mode_commutation_period = req->frequency;
 		update_velocity(BLDC, BLDC->velocity);
 		BLDC->outrunning_angle = req->outrunning_angle;
-		BLDC->speed_k = req->speed_k;
+		BLDC->speed_k[BLDC->rotation_dir] = req->speed_k;
 		
 		// recalculate next angles
 		update_angles(BLDC);

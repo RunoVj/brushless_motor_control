@@ -256,11 +256,8 @@ void EXTI1_IRQHandler(void)
 	}
 	else {
 		BLDC.set_next_angle = true;
-//		set_next_angle(&BLDC);
 	}
-	
 	calculate_speed(&BLDC);
-	
   /* USER CODE END EXTI1_IRQn 1 */
 }
 
@@ -282,12 +279,8 @@ void EXTI2_IRQHandler(void)
 	}
 	else {
 		BLDC.set_next_angle = true;
-//		set_next_angle(&BLDC);
 	}
-	
 	calculate_speed(&BLDC);
-	
-	
   /* USER CODE END EXTI2_IRQn 1 */
 }
 
@@ -309,7 +302,6 @@ void EXTI3_IRQHandler(void)
 	}
 	else {
 		BLDC.set_next_angle = true;
-//		set_next_angle(&BLDC);
 	}
 
 	calculate_speed(&BLDC);
