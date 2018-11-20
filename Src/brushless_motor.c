@@ -4,6 +4,7 @@
 #include "adc.h"
 #include "usart.h"
 #include "svpwm.h"
+#include "messages.h"
 
 BrushlessMotor BLDC;
 uint16_t adc_buf[ADC_BUF_SIZE];

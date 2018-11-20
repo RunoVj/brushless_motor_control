@@ -12,9 +12,19 @@
 #include "checksum.h"
 #include "adc.h"
 
-uint8_t msg_buf[RESPONSE_LENGTH];
+uint8_t msg_buf[TERMINAL_RESPONSE_LENGTH];
 
 bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
+{
+	if (req->address == BLDC->address) {
+		BLDC->velocity = req->velocity;
+		update_velocity(BLDC, BLDC->velocity);
+		return true;
+	}
+	return false;
+}
+
+bool parse_terminal_request(BrushlessMotor *BLDC, struct TerminalRequest *req)
 {
 	if (req->address == BLDC->address) {
 		// if vectors updating complited
@@ -30,14 +40,15 @@ bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
 		BLDC->fan_mode_commutation_period = req->frequency;
 		update_velocity(BLDC, BLDC->velocity);
 		BLDC->outrunning_angle = req->outrunning_angle;
-		BLDC->speed_k[BLDC->rotation_dir] = req->speed_k;
-		
+		if (req->update_speed_k) {
+			BLDC->speed_k[BLDC->rotation_dir] = req->speed_k;
+		}
 		// recalculate next angles
 		update_angles(BLDC);
 		return true;
 	}	
-	return false;
-}
+	return false;	
+};
 
 bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
 {
@@ -48,6 +59,9 @@ bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
 		BLDC->average_current_threshold = req->average_threshold;
 		
 		BLDC->address = req->new_address;
+		BLDC->speed_k[clockwise] = req->clockwise_speed_k;
+		BLDC->speed_k[counterclockwise] = req->counterclockwise_speed_k;
+		
 		FLASH_WriteSettings(BLDC, req->update_firmware);
 		if (req->update_firmware) {
 			motor_disable();
@@ -62,10 +76,15 @@ bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
 bool parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length)
 { 
 	if (IsChecksumm8bCorrect(message, length)) {
-		if (length == REQUEST_LENGTH) {
+		if (length == NORMAL_REQUEST_LENGTH) {
 			struct Request req;
 			memcpy((void*)&req, (void*)message, length);
 			return parse_normal_request(BLDC, &req);
+		}
+		else if (length == TERMINAL_REQUEST_LENGTH) {
+			struct TerminalRequest req;
+			memcpy((void*)&req, (void*)message, length);
+			return parse_terminal_request(BLDC, &req);
 		}
 		else if (length == CONFIG_REQUEST_LENGTH) {
 			struct ConfigRequest req;
@@ -76,21 +95,42 @@ bool parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length)
 	return false;
 }
 
-void send_package(BrushlessMotor *BLDC)
+void normal_response(BrushlessMotor *BLDC)
 {
 	struct Response resp;
 	resp.AA = 0xAA;
-	resp.address = BLDC->address;
 	resp.type = 0x01;
-	resp.position_code = BLDC->position_code;
+	resp.address = BLDC->address;
+	resp.state = BLDC->state;
 	resp.current = BLDC->current;
-	resp.cur_angle = BLDC->cur_angle;
 	resp.speed_period = BLDC->speed_period;
-  
-	memcpy((void*)msg_buf, (void*)&resp, RESPONSE_LENGTH - 1);
-	AddChecksumm8b(msg_buf, RESPONSE_LENGTH);
+
+	memcpy((void*)msg_buf, (void*)&resp, NORMAL_RESPONSE_LENGTH - 1);
+	AddChecksumm8b(msg_buf, NORMAL_RESPONSE_LENGTH);
 	
   HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_SET);
 	
-  HAL_UART_Transmit_DMA(&huart1, msg_buf, RESPONSE_LENGTH);
+  HAL_UART_Transmit_DMA(&huart1, msg_buf, NORMAL_RESPONSE_LENGTH);
+}
+
+void terminal_response(BrushlessMotor *BLDC)
+{
+	struct TerminalResponse resp;
+	resp.AA = 0xAA;
+	resp.type = 0x01;
+	resp.address = BLDC->address;
+	resp.state = BLDC->state;
+	resp.position_code = BLDC->position_code;
+	resp.cur_angle = BLDC->cur_angle;
+	resp.current = BLDC->current;
+	resp.speed_period = BLDC->speed_period;
+	resp.clockwise_speed_k = BLDC->speed_k[clockwise];
+	resp.counterclockwise_speed_k = BLDC->speed_k[counterclockwise];
+  
+	memcpy((void*)msg_buf, (void*)&resp, TERMINAL_RESPONSE_LENGTH - 1);
+	AddChecksumm8b(msg_buf, TERMINAL_RESPONSE_LENGTH);
+	
+  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_SET);
+	
+  HAL_UART_Transmit_DMA(&huart1, msg_buf, TERMINAL_RESPONSE_LENGTH);
 }

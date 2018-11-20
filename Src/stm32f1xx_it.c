@@ -42,12 +42,12 @@
 #include "usart.h"
 
 uint8_t rx_byte;
-uint8_t rx_counter;
+uint8_t rx_counter = 0;
 bool uart1_package_received;
 bool uart1_package_sended = true;
 
-uint8_t uart_pack_size = REQUEST_LENGTH;
-uint8_t uart_receive_buf[REQUEST_LENGTH];
+uint8_t uart_pack_size = 0;
+uint8_t uart_receive_buf[20]; // max size of possible package
 
 uint8_t package_timeout = RECEIVE_TIMEOUT;
 
@@ -212,8 +212,13 @@ void SysTick_Handler(void)
 			if (uart1_package_received){
 				uart1_package_received = false;   
 				bool parsing_is_ok = parse_package(&BLDC, uart_receive_buf, uart_pack_size);
-				if (uart1_package_sended && parsing_is_ok){
-					send_package(&BLDC); 
+				if (uart1_package_sended && parsing_is_ok) {
+					if (uart_receive_buf[1] == NORMAL_REQUEST_TYPE) {
+						normal_response(&BLDC); 
+					}
+					else if (uart_receive_buf[1] == TERMINAL_REQUEST_TYPE) {
+						terminal_response(&BLDC);
+					}
 				}          
 			}
 			rx_counter = 0;
@@ -452,11 +457,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     package_started = true;
 	}
 	else if (rx_counter == 1) {
-		if (rx_byte == CONFIG_REQUEST_TYPE) {
-			uart_pack_size = CONFIG_REQUEST_LENGTH;
-		}
-		else {
-			uart_pack_size = REQUEST_LENGTH;
+		switch (rx_byte) {
+			case NORMAL_REQUEST_TYPE:
+				uart_pack_size = NORMAL_REQUEST_LENGTH;
+			break;
+			
+			case TERMINAL_REQUEST_TYPE:
+				uart_pack_size = TERMINAL_REQUEST_LENGTH;
+			break;
+			
+			case CONFIG_REQUEST_TYPE:
+				uart_pack_size = CONFIG_REQUEST_LENGTH;
+			break;
 		}
 	}
   
@@ -465,10 +477,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if (rx_counter == uart_pack_size) {
 		uart1_package_received = true;
 		rx_counter = 0;
-	} 
-  else {
-    HAL_UART_Receive_IT(&huart1, &rx_byte, 1);    
-  }
+	}
+	
+	HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)

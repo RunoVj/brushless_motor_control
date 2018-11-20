@@ -5,6 +5,7 @@
 #include "brushless_motor.h"
 
 bool parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length);
-void send_package(BrushlessMotor *BLDC);
+void normal_response(BrushlessMotor *BLDC);
+void terminal_response(BrushlessMotor *BLDC);
 
 #endif //__COMMUNICATION_H

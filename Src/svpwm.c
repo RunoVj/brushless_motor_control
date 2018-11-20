@@ -31,7 +31,7 @@ void uvector_state(uint16_t angle, uint16_t  amplitude, uint16_t* PWM, uint16_t 
 		
 		
 		
-		if (direction) {
+//		if (direction) {
 			switch (sector) {
 			case 0: PWM[a] = T[0]; 
 							PWM[b] = PWM[a] + T[1];
@@ -59,34 +59,34 @@ void uvector_state(uint16_t angle, uint16_t  amplitude, uint16_t* PWM, uint16_t 
 			break;
 			default: break;
 			}
-		}
-		else {
-			switch (sector) {
-			case 0: PWM[a] = T[0]; 
-							PWM[b] = PWM[a] + T[2];
-							PWM[c] = PWM[b] + T[1];
-			break;
-			case 1: PWM[b] = T[0]; 
-							PWM[a] = PWM[b] + T[1];
-							PWM[c] = PWM[a] + T[2];
-			break;
-			case 2: PWM[b] = T[0]; 
-							PWM[c] = PWM[b] + T[2];
-							PWM[a] = PWM[c] + T[1];
-			break;
-			case 3: PWM[c] = T[0];
-							PWM[b] = PWM[c] + T[1];
-							PWM[a] = PWM[b] + T[2];
-			break;
-			case 4:	PWM[c] = T[0];
-							PWM[a] = PWM[c] + T[2];
-							PWM[b] = PWM[a] + T[1];
-			break;
-			case 5: PWM[a] = T[0]; 
-							PWM[c] = PWM[a] + T[1];
-							PWM[b] = PWM[c] + T[2];
-			break;
-			default: break;
-			}
-		}
+//		}
+//		else {
+//			switch (sector) {
+//			case 0: PWM[a] = T[0]; 
+//							PWM[b] = PWM[a] + T[2];
+//							PWM[c] = PWM[b] + T[1];
+//			break;
+//			case 1: PWM[b] = T[0]; 
+//							PWM[a] = PWM[b] + T[1];
+//							PWM[c] = PWM[a] + T[2];
+//			break;
+//			case 2: PWM[b] = T[0]; 
+//							PWM[c] = PWM[b] + T[2];
+//							PWM[a] = PWM[c] + T[1];
+//			break;
+//			case 3: PWM[c] = T[0];
+//							PWM[b] = PWM[c] + T[1];
+//							PWM[a] = PWM[b] + T[2];
+//			break;
+//			case 4:	PWM[c] = T[0];
+//							PWM[a] = PWM[c] + T[2];
+//							PWM[b] = PWM[a] + T[1];
+//			break;
+//			case 5: PWM[a] = T[0]; 
+//							PWM[c] = PWM[a] + T[1];
+//							PWM[b] = PWM[c] + T[2];
+//			break;
+//			default: break;
+//			}
+//		}
 }
