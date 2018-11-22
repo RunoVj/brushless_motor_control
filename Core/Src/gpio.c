@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : ADC.h
+  * File Name          : gpio.c
   * Description        : This file provides code for the configuration
-  *                      of the ADC instances.
+  *                      of all used GPIO pins.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -36,46 +36,61 @@
   *
   ******************************************************************************
   */
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __adc_H
-#define __adc_H
-#ifdef __cplusplus
- extern "C" {
-#endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f1xx_hal.h"
-#include "main.h"
+#include "gpio.h"
+/* USER CODE BEGIN 0 */
 
-/* USER CODE BEGIN Includes */
+/* USER CODE END 0 */
 
-/* USER CODE END Includes */
+/*----------------------------------------------------------------------------*/
+/* Configure GPIO                                                             */
+/*----------------------------------------------------------------------------*/
+/* USER CODE BEGIN 1 */
 
-extern ADC_HandleTypeDef hadc1;
+/* USER CODE END 1 */
 
-/* USER CODE BEGIN Private defines */
+/** Configure pins as 
+        * Analog 
+        * Input 
+        * Output
+        * EVENT_OUT
+        * EXTI
+*/
+void MX_GPIO_Init(void)
+{
 
-/* USER CODE END Private defines */
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-extern void _Error_Handler(char *, int);
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
-void MX_ADC1_Init(void);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
 
-/* USER CODE BEGIN Prototypes */
-void update_current_thresholds(ADC_HandleTypeDef *hadc, uint16_t high_threshold, uint16_t low_threshold);
-/* USER CODE END Prototypes */
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, BRIDGE_A_EN_Pin|BRIDGE_B_EN_Pin|BRIDGE_C_EN_Pin, GPIO_PIN_RESET);
 
-#ifdef __cplusplus
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = RS485_DIR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(RS485_DIR_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PBPin PBPin PBPin */
+  GPIO_InitStruct.Pin = BRIDGE_A_EN_Pin|BRIDGE_B_EN_Pin|BRIDGE_C_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 }
-#endif
-#endif /*__ adc_H */
 
-/**
-  * @}
-  */
+/* USER CODE BEGIN 2 */
 
-/**
-  * @}
-  */
+/* USER CODE END 2 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

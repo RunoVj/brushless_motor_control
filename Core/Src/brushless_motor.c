@@ -35,7 +35,7 @@ void update_pwm_duty(Phase phase, uint16_t duty)
 {
   switch (phase){
     case A:
-      htim1.Instance->CCR1 = duty;
+		  htim3.Instance->CCR1 = duty;
     break;
     
     case B:
@@ -43,7 +43,7 @@ void update_pwm_duty(Phase phase, uint16_t duty)
     break;
     
     case C:
-      htim3.Instance->CCR1 = duty;      
+      htim3.Instance->CCR3 = duty;      
     break;
   }
 }

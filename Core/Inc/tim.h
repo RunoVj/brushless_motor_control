@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file           : main.h
-  * @brief          : Header for main.c file.
-  *                   This file contains the common defines of the application.
+  * File Name          : TIM.h
+  * Description        : This file provides code for the configuration
+  *                      of the TIM instances.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -36,69 +36,47 @@
   *
   ******************************************************************************
   */
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#ifndef __tim_H
+#define __tim_H
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "main.h"
 
 /* USER CODE BEGIN Includes */
-#include "stdint.h"
-#include "stdbool.h"
+
 /* USER CODE END Includes */
 
-/* Private define ------------------------------------------------------------*/
-
-#define SENSOR_C_Pin GPIO_PIN_1
-#define SENSOR_C_GPIO_Port GPIOA
-#define SENSOR_C_EXTI_IRQn EXTI1_IRQn
-#define SENSOR_B_Pin GPIO_PIN_2
-#define SENSOR_B_GPIO_Port GPIOA
-#define SENSOR_B_EXTI_IRQn EXTI2_IRQn
-#define SENSOR_A_Pin GPIO_PIN_3
-#define SENSOR_A_GPIO_Port GPIOA
-#define SENSOR_A_EXTI_IRQn EXTI3_IRQn
-#define RS485_DIR_Pin GPIO_PIN_5
-#define RS485_DIR_GPIO_Port GPIOA
-#define PWM_C_Pin GPIO_PIN_6
-#define PWM_C_GPIO_Port GPIOA
-#define PWM_B_Pin GPIO_PIN_7
-#define PWM_B_GPIO_Port GPIOA
-#define CURRENT_CONSUMPTION_Pin GPIO_PIN_0
-#define CURRENT_CONSUMPTION_GPIO_Port GPIOB
-#define BRIDGE_A_EN_Pin GPIO_PIN_13
-#define BRIDGE_A_EN_GPIO_Port GPIOB
-#define BRIDGE_B_EN_Pin GPIO_PIN_14
-#define BRIDGE_B_EN_GPIO_Port GPIOB
-#define BRIDGE_C_EN_Pin GPIO_PIN_15
-#define BRIDGE_C_EN_GPIO_Port GPIOB
-#define PWM_A_Pin GPIO_PIN_8
-#define PWM_A_GPIO_Port GPIOA
-#define DEBUG_LED_Pin GPIO_PIN_15
-#define DEBUG_LED_GPIO_Port GPIOA
-
-/* ########################## Assert Selection ############################## */
-/**
-  * @brief Uncomment the line below to expanse the "assert_param" macro in the 
-  *        HAL drivers code
-  */
-/* #define USE_FULL_ASSERT    1U */
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-#ifdef __cplusplus
- extern "C" {
-#endif
-void _Error_Handler(char *, int);
+void MX_TIM2_Init(void);
+void MX_TIM3_Init(void);
+                        
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+                    
+/* USER CODE BEGIN Prototypes */
 
-#define Error_Handler() _Error_Handler(__FILE__, __LINE__)
+/* USER CODE END Prototypes */
+
 #ifdef __cplusplus
 }
 #endif
+#endif /*__ tim_H */
 
-#endif /* __MAIN_H__ */
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

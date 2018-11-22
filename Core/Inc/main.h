@@ -1,8 +1,9 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * File Name          : TIM.h
-  * Description        : This file provides code for the configuration
-  *                      of the TIM instances.
+  * @file           : main.h
+  * @brief          : Header for main.c file.
+  *                   This file contains the common defines of the application.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -36,51 +37,77 @@
   *
   ******************************************************************************
   */
+/* USER CODE END Header */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __tim_H
-#define __tim_H
+#ifndef __MAIN_H
+#define __MAIN_H
+
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
-#include "main.h"
 
+/* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
-extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim3;
+/* Exported types ------------------------------------------------------------*/
+/* USER CODE BEGIN ET */
 
+/* USER CODE END ET */
+
+/* Exported constants --------------------------------------------------------*/
+/* USER CODE BEGIN EC */
+
+/* USER CODE END EC */
+
+/* Exported macro ------------------------------------------------------------*/
+/* USER CODE BEGIN EM */
+
+/* USER CODE END EM */
+
+/* Exported functions prototypes ---------------------------------------------*/
+void Error_Handler(void);
+
+/* USER CODE BEGIN EFP */
+
+/* USER CODE END EFP */
+
+/* Private defines -----------------------------------------------------------*/
+#define SENSOR_A_Pin GPIO_PIN_0
+#define SENSOR_A_GPIO_Port GPIOA
+#define SENSOR_B_Pin GPIO_PIN_1
+#define SENSOR_B_GPIO_Port GPIOA
+#define CURRENT_CONSUMPTION_Pin GPIO_PIN_2
+#define CURRENT_CONSUMPTION_GPIO_Port GPIOA
+#define RS485_DIR_Pin GPIO_PIN_5
+#define RS485_DIR_GPIO_Port GPIOA
+#define PWM_A_Pin GPIO_PIN_6
+#define PWM_A_GPIO_Port GPIOA
+#define PWM_B_Pin GPIO_PIN_7
+#define PWM_B_GPIO_Port GPIOA
+#define PWM_C_Pin GPIO_PIN_0
+#define PWM_C_GPIO_Port GPIOB
+#define SENSOR_C_Pin GPIO_PIN_10
+#define SENSOR_C_GPIO_Port GPIOB
+#define BRIDGE_A_EN_Pin GPIO_PIN_13
+#define BRIDGE_A_EN_GPIO_Port GPIOB
+#define BRIDGE_B_EN_Pin GPIO_PIN_14
+#define BRIDGE_B_EN_GPIO_Port GPIOB
+#define BRIDGE_C_EN_Pin GPIO_PIN_15
+#define BRIDGE_C_EN_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-extern void _Error_Handler(char *, int);
-
-void MX_TIM1_Init(void);
-void MX_TIM3_Init(void);
-                    
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-                                
-
-/* USER CODE BEGIN Prototypes */
-
-/* USER CODE END Prototypes */
-
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ tim_H */
 
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
+#endif /* __MAIN_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
