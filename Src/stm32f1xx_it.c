@@ -478,8 +478,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		uart1_package_received = true;
 		rx_counter = 0;
 	}
-	
-	HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
+  else {
+    HAL_UART_Receive_IT(&huart1, &rx_byte, 1);    
+  }
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
