@@ -3,7 +3,7 @@
 
 /* STM send requests and VMA send responses */
 
-#define RECEIVE_TIMEOUT  5
+#define RECEIVE_TIMEOUT                     4
 
 #define NORMAL_REQUEST_TYPE                 0x01
 #define TERMINAL_REQUEST_TYPE               0x02

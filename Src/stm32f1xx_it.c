@@ -216,7 +216,7 @@ void SysTick_Handler(void)
 					if (uart_receive_buf[1] == NORMAL_REQUEST_TYPE) {
 						normal_response(&BLDC); 
 					}
-					else if (uart_receive_buf[1] == TERMINAL_REQUEST_TYPE) {
+					else /*if (uart_receive_buf[1] == TERMINAL_REQUEST_TYPE)*/ {
 						terminal_response(&BLDC);
 					}
 				}          

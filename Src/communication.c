@@ -19,6 +19,7 @@ bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
 	if (req->address == BLDC->address) {
 		BLDC->velocity = req->velocity;
 		update_velocity(BLDC, BLDC->velocity);
+		update_angles(BLDC);
 		return true;
 	}
 	return false;
