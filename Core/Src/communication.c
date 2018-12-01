@@ -10,7 +10,6 @@
 #include "bootloader.h"
 #include "communication.h"
 #include "checksum.h"
-#include "adc.h"
 
 uint8_t msg_buf[TERMINAL_RESPONSE_LENGTH];
 
@@ -19,7 +18,6 @@ bool parse_normal_request(BrushlessMotor *BLDC, struct Request *req)
 	if (req->address == BLDC->address) {
 		BLDC->velocity = req->velocity;
 		update_velocity(BLDC, BLDC->velocity);
-		update_angles(BLDC);
 		return true;
 	}
 	return false;
@@ -29,23 +27,11 @@ bool parse_terminal_request(BrushlessMotor *BLDC, struct TerminalRequest *req)
 {
 	if (req->address == BLDC->address) {
 		// if vectors updating complited
-		if (BLDC->update_base_vectors && !req->update_base_vector) {
-			FLASH_WriteSettings(BLDC, false);
-		}
-		BLDC->update_base_vectors = req->update_base_vector;
-		BLDC->position_setting_enabled = req->position_setting;
-		if (req->position_setting) {
-			BLDC->next_angle = req->angle;
-		}
 		BLDC->velocity = req->velocity;
-		BLDC->fan_mode_commutation_period = req->frequency;
 		update_velocity(BLDC, BLDC->velocity);
-		BLDC->outrunning_angle = req->outrunning_angle;
 		if (req->update_speed_k) {
 			BLDC->speed_k[BLDC->rotation_dir] = req->speed_k;
 		}
-		// recalculate next angles
-		update_angles(BLDC);
 		return true;
 	}	
 	return false;	
@@ -54,10 +40,6 @@ bool parse_terminal_request(BrushlessMotor *BLDC, struct TerminalRequest *req)
 bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
 {
 	if (req->forse_setting || req->old_address == BLDC->address) {
-		BLDC->high_impulse_current_threshold = req->high_threshold;
-		BLDC->low_impulse_current_threshold = req->low_threshold;
-		update_current_thresholds(&hadc1, req->high_threshold, req->low_threshold);
-		BLDC->average_current_threshold = req->average_threshold;
 		
 		BLDC->address = req->new_address;
 		BLDC->speed_k[clockwise] = req->clockwise_speed_k;
@@ -65,7 +47,7 @@ bool parse_config_request(BrushlessMotor *BLDC, struct ConfigRequest *req)
 		
 		FLASH_WriteSettings(BLDC, req->update_firmware);
 		if (req->update_firmware) {
-			motor_disable();
+			motor_stop(BLDC);
 			// go to bootloader
 			HAL_NVIC_SystemReset(); 
 //			jump(BOOTLOADER_ADDR);
@@ -102,9 +84,9 @@ void normal_response(BrushlessMotor *BLDC)
 	resp.AA = 0xAA;
 	resp.type = 0x01;
 	resp.address = BLDC->address;
-	resp.state = BLDC->state;
-	resp.current = BLDC->current;
-	resp.speed_period = BLDC->speed_period;
+	resp.state = 0x55;
+	resp.current = 0x55;
+	resp.speed_period = 0x55;
 
 	memcpy((void*)msg_buf, (void*)&resp, NORMAL_RESPONSE_LENGTH - 1);
 	AddChecksumm8b(msg_buf, NORMAL_RESPONSE_LENGTH);
@@ -120,11 +102,11 @@ void terminal_response(BrushlessMotor *BLDC)
 	resp.AA = 0xAA;
 	resp.type = 0x01;
 	resp.address = BLDC->address;
-	resp.state = BLDC->state;
-	resp.position_code = BLDC->position_code;
-	resp.cur_angle = BLDC->cur_angle;
-	resp.current = BLDC->current;
-	resp.speed_period = BLDC->speed_period;
+	resp.state = 0x55;
+	resp.position_code = 0x55;
+	resp.cur_angle = 0x55;
+	resp.current = 0x55;
+	resp.speed_period = 0x55;
 	resp.clockwise_speed_k = BLDC->speed_k[clockwise];
 	resp.counterclockwise_speed_k = BLDC->speed_k[counterclockwise];
   

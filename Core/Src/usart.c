@@ -41,7 +41,11 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-
+void transmit_package_dma(uint8_t *package, uint8_t length)
+{
+  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_SET);
+  HAL_UART_Transmit_DMA(&huart1, package, length); 
+}
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;

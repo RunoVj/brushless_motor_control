@@ -67,7 +67,22 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#include "brushless_motor.h"
+#include "messages.h"
+#include "communication.h"
+#include "usart.h"
 
+uint8_t rx_byte;
+uint8_t rx_counter = 0;
+bool uart1_package_received;
+bool uart1_package_sended = true;
+
+uint8_t uart_pack_size = 0;
+uint8_t uart_receive_buf[20]; // max size of possible package
+
+uint8_t package_timeout = RECEIVE_TIMEOUT;
+
+bool package_started = true; //to start receiving
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -199,11 +214,42 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
+  HAL_SYSTICK_IRQHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-
+	static uint16_t communication_counter;
+  static uint16_t led_counter;
+	// communication cycle
+	// if first byte was received
+	if (package_started) {
+		++communication_counter;
+		if (communication_counter == package_timeout) {
+			communication_counter = 0;
+			if (uart1_package_received){
+				uart1_package_received = false;   
+				bool parsing_is_ok = parse_package(&BLDC, uart_receive_buf, uart_pack_size);
+				if (uart1_package_sended && parsing_is_ok) {
+					if (uart_receive_buf[1] == NORMAL_REQUEST_TYPE) {
+						normal_response(&BLDC); 
+					}
+					else /*if (uart_receive_buf[1] == TERMINAL_REQUEST_TYPE)*/ {
+						terminal_response(&BLDC);
+					}
+				}          
+			}
+			rx_counter = 0;
+			HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
+			package_started = false;
+		}
+	}
+		
+	// blinking
+	if (led_counter == 1000) {
+		led_counter = 0;
+		HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
+	}
+	++led_counter;
   /* USER CODE END SysTick_IRQn 1 */
 }
 

@@ -78,28 +78,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define SENSOR_A_Pin GPIO_PIN_0
-#define SENSOR_A_GPIO_Port GPIOA
-#define SENSOR_B_Pin GPIO_PIN_1
-#define SENSOR_B_GPIO_Port GPIOA
-#define CURRENT_CONSUMPTION_Pin GPIO_PIN_2
-#define CURRENT_CONSUMPTION_GPIO_Port GPIOA
 #define RS485_DIR_Pin GPIO_PIN_5
 #define RS485_DIR_GPIO_Port GPIOA
-#define PWM_A_Pin GPIO_PIN_6
-#define PWM_A_GPIO_Port GPIOA
-#define PWM_B_Pin GPIO_PIN_7
-#define PWM_B_GPIO_Port GPIOA
-#define PWM_C_Pin GPIO_PIN_0
-#define PWM_C_GPIO_Port GPIOB
-#define SENSOR_C_Pin GPIO_PIN_10
-#define SENSOR_C_GPIO_Port GPIOB
-#define BRIDGE_A_EN_Pin GPIO_PIN_13
-#define BRIDGE_A_EN_GPIO_Port GPIOB
-#define BRIDGE_B_EN_Pin GPIO_PIN_14
-#define BRIDGE_B_EN_GPIO_Port GPIOB
-#define BRIDGE_C_EN_Pin GPIO_PIN_15
-#define BRIDGE_C_EN_GPIO_Port GPIOB
+#define PWM_Pin GPIO_PIN_6
+#define PWM_GPIO_Port GPIOA
+#define ENABLE_Pin GPIO_PIN_15
+#define ENABLE_GPIO_Port GPIOB
+#define DEBUG_LED_Pin GPIO_PIN_15
+#define DEBUG_LED_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
