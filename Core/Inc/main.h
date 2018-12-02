@@ -100,6 +100,8 @@ void Error_Handler(void);
 #define BRIDGE_B_EN_GPIO_Port GPIOB
 #define BRIDGE_C_EN_Pin GPIO_PIN_15
 #define BRIDGE_C_EN_GPIO_Port GPIOB
+#define DEBUG_LED_Pin GPIO_PIN_15
+#define DEBUG_LED_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
