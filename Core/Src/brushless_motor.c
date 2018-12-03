@@ -20,8 +20,9 @@ void update_velocity(BrushlessMotor* BLDC, int8_t velocity)
 	}
   else {
     BLDC->rotation_dir = counterclockwise;
-		BLDC->pwm_duty = (-velocity)*PWM_RESIZE_COEF;
+		BLDC->pwm_duty = (velocity)*PWM_RESIZE_COEF;
   }
+	htim3.Instance->CCR1 = SERVO_STOP_DUTY + BLDC->pwm_duty;
 }
 
 void motor_stop(BrushlessMotor *BLDC)

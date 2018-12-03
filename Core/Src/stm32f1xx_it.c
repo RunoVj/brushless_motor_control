@@ -303,6 +303,43 @@ void USART1_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (rx_counter == 0) {
+    package_started = true;
+	}
+	else if (rx_counter == 1) {
+		switch (rx_byte) {
+			case NORMAL_REQUEST_TYPE:
+				uart_pack_size = NORMAL_REQUEST_LENGTH;
+			break;
+			
+			case TERMINAL_REQUEST_TYPE:
+				uart_pack_size = TERMINAL_REQUEST_LENGTH;
+			break;
+			
+			case CONFIG_REQUEST_TYPE:
+				uart_pack_size = CONFIG_REQUEST_LENGTH;
+			break;
+		}
+	}
+  
+	uart_receive_buf[rx_counter++] = rx_byte;
+	
+	if (rx_counter == uart_pack_size) {
+		uart1_package_received = true;
+		rx_counter = 0;
+	}
+  else {
+    HAL_UART_Receive_IT(&huart1, &rx_byte, 1);    
+  }
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  uart1_package_sended = true;
+  HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
+}
 
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
