@@ -86,7 +86,6 @@ bool package_started = true; //to start receiving
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern TIM_HandleTypeDef htim3;
 extern DMA_HandleTypeDef hdma_usart1_tx;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
@@ -216,7 +215,6 @@ void SysTick_Handler(void)
   /* USER CODE BEGIN SysTick_IRQn 0 */
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
-  HAL_SYSTICK_IRQHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 	static uint16_t communication_counter;
   static uint16_t led_counter;
@@ -275,20 +273,6 @@ void DMA1_Channel4_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles TIM3 global interrupt.
-  */
-void TIM3_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM3_IRQn 0 */
-
-  /* USER CODE END TIM3_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim3);
-  /* USER CODE BEGIN TIM3_IRQn 1 */
-
-  /* USER CODE END TIM3_IRQn 1 */
-}
-
-/**
   * @brief This function handles USART1 global interrupt.
   */
 void USART1_IRQHandler(void)
@@ -330,9 +314,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		uart1_package_received = true;
 		rx_counter = 0;
 	}
-  else {
+//  else {
     HAL_UART_Receive_IT(&huart1, &rx_byte, 1);    
-  }
+//  }
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
