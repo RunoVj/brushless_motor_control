@@ -5,7 +5,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2018 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2019 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -63,7 +63,7 @@
 /*#define HAL_I2C_MODULE_ENABLED   */
 /*#define HAL_I2S_MODULE_ENABLED   */
 /*#define HAL_IRDA_MODULE_ENABLED   */
-/*#define HAL_IWDG_MODULE_ENABLED   */
+#define HAL_IWDG_MODULE_ENABLED
 /*#define HAL_NOR_MODULE_ENABLED   */
 /*#define HAL_NAND_MODULE_ENABLED   */
 /*#define HAL_PCCARD_MODULE_ENABLED   */
@@ -143,7 +143,7 @@
   * @brief This is the HAL system configuration section
   */     
 #define  VDD_VALUE                    ((uint32_t)3300) /*!< Value of VDD in mv */           
-#define  TICK_INT_PRIORITY            ((uint32_t)1)    /*!< tick interrupt priority (lowest by default)  */            
+#define  TICK_INT_PRIORITY            ((uint32_t)2)    /*!< tick interrupt priority (lowest by default)  */            
 #define  USE_RTOS                     0
 #define  PREFETCH_ENABLE              1
 

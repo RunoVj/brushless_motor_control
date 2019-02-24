@@ -1,11 +1,16 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    stm32f1xx_it.h
-  * @brief   This file contains the headers of the interrupt handlers.
+  * File Name          : IWDG.c
+  * Description        : This file provides code for the configuration
+  *                      of the IWDG instances.
   ******************************************************************************
+  ** This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
   *
-  * COPYRIGHT(c) 2018 STMicroelectronics
+  * COPYRIGHT(c) 2019 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -31,60 +36,32 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32F1xx_IT_H
-#define __STM32F1xx_IT_H
+/* Includes ------------------------------------------------------------------*/
+#include "iwdg.h"
 
-#ifdef __cplusplus
- extern "C" {
-#endif 
+/* USER CODE BEGIN 0 */
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
+/* USER CODE END 0 */
 
-/* USER CODE END Includes */
+IWDG_HandleTypeDef hiwdg;
 
-/* Exported types ------------------------------------------------------------*/
-/* USER CODE BEGIN ET */
+/* IWDG init function */
+void MX_IWDG_Init(void)
+{
 
-/* USER CODE END ET */
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
+  hiwdg.Init.Reload = 4095;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
-/* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
-
-/* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
-
-/* Exported functions prototypes ---------------------------------------------*/
-void NMI_Handler(void);
-void HardFault_Handler(void);
-void MemManage_Handler(void);
-void BusFault_Handler(void);
-void UsageFault_Handler(void);
-void SVC_Handler(void);
-void DebugMon_Handler(void);
-void PendSV_Handler(void);
-void SysTick_Handler(void);
-void EXTI1_IRQHandler(void);
-void EXTI2_IRQHandler(void);
-void EXTI3_IRQHandler(void);
-void DMA1_Channel4_IRQHandler(void);
-void TIM4_IRQHandler(void);
-void USART1_IRQHandler(void);
-/* USER CODE BEGIN EFP */
-
-/* USER CODE END EFP */
-
-#ifdef __cplusplus
 }
-#endif
 
-#endif /* __STM32F1xx_IT_H */
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
