@@ -9,12 +9,15 @@
 #define TERMINAL_REQUEST_TYPE               0x02
 #define CONFIG_REQUEST_TYPE                 0x03
 #define FIRMWARE_REQUEST_TYPE               0x04
+#define DEVICE_REQUEST_TYPE                 0xAA
 
 #define NORMAL_REQUEST_LENGTH               5
 #define NORMAL_RESPONSE_LENGTH              9
 #define TERMINAL_REQUEST_LENGTH             15
 #define TERMINAL_RESPONSE_LENGTH            16
 #define CONFIG_REQUEST_LENGTH               18
+#define DEVICES_REQUEST_LENGTH              7
+#define DEVICES_RESPONSE_LENGTH             10
 
 #include "stdint.h"
 
@@ -86,6 +89,29 @@ struct ConfigRequest
 	uint8_t update_correction;
 	uint16_t clockwise_speed_k;
 	uint16_t counterclockwise_speed_k;
+	uint8_t crc;
+};
+
+struct DevicesRequest
+{
+	uint8_t AA1;
+	uint8_t AA2;
+	uint8_t address;
+	uint8_t setting;
+	uint8_t velocity1;
+	uint8_t velocity2;
+	uint8_t crc;
+};
+
+struct DevicesResponse
+{
+	uint8_t AA;
+	uint8_t address;
+	uint8_t errors;
+	uint16_t current1;
+	uint16_t current2;
+	uint8_t velocity1;
+	uint8_t velocity2;
 	uint8_t crc;
 };
 

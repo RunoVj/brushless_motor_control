@@ -1,8 +1,8 @@
 #include "flash_config.h"       
 
-void FLASH_ReadSettings(BrushlessMotor *BLDC)
+void FLASH_ReadSettings(LimitSwitchController *lim_sw_ctrl)
 {
-	BLDCConfig config;
+	LimitSwitchControllerConfig config;
 	uint32_t *source_addr = (uint32_t *)CONFIG_PAGE_ADDR;
 	uint32_t *dest_addr = (void *)&config;
 	
@@ -12,30 +12,14 @@ void FLASH_ReadSettings(BrushlessMotor *BLDC)
 		dest_addr++;
 	}
 	
-	BLDC->address = config.address;
-	
-	BLDCAdditionalConfig add_config;
-	dest_addr = (void *)&add_config;
-	
-	for (uint16_t i = 0; i < ADDITIONAL_SETTINGS_WORDS; ++i) {
-		*dest_addr = *(__IO uint32_t*)source_addr;
-		source_addr++;
-		dest_addr++;
-	}
-	
-	BLDC->speed_k[clockwise] = add_config.speed_k[clockwise];
-	BLDC->speed_k[counterclockwise] = add_config.speed_k[counterclockwise];
+	lim_sw_ctrl->address = config.address;
 }
 
-void FLASH_WriteSettings(BrushlessMotor *BLDC, bool update_firmware)
+void FLASH_WriteSettings(LimitSwitchController *lim_sw_ctrl, bool update_firmware)
 {
-	BLDCConfig config;
-	config.address = BLDC->address;
+	LimitSwitchControllerConfig config;
+	config.address = lim_sw_ctrl->address;
 	config.update_firmware = update_firmware;
-	
-	BLDCAdditionalConfig add_config;
-	add_config.speed_k[clockwise] = BLDC->speed_k[clockwise];
-	add_config.speed_k[counterclockwise] = BLDC->speed_k[counterclockwise];	
 	
 
 	// Write settings
@@ -53,13 +37,6 @@ void FLASH_WriteSettings(BrushlessMotor *BLDC, bool update_firmware)
 	// write page
 	uint32_t *source_addr = (void *)&config;
 	uint32_t *dest_addr = (uint32_t *)CONFIG_PAGE_ADDR;
-	for (uint8_t i = 0; i < SETTINGS_WORDS; ++i) {
-		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)dest_addr, *source_addr);
-		source_addr++;
-		dest_addr++;
-	}
-	
-	source_addr = (void *)&add_config;
 	for (uint8_t i = 0; i < SETTINGS_WORDS; ++i) {
 		HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)dest_addr, *source_addr);
 		source_addr++;

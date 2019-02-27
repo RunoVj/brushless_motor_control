@@ -2,10 +2,11 @@
 #define __COMMUNICATION_H
 
 #include "messages.h"
-#include "brushless_motor.h"
+#include "limit_switch_controller.h"
 
-bool parse_package(BrushlessMotor *BLDC, uint8_t *message, uint8_t length);
-void normal_response(BrushlessMotor *BLDC);
-void terminal_response(BrushlessMotor *BLDC);
+bool parse_package(LimitSwitchController *lim_sw_ctrl, uint8_t *message, uint8_t length);
+void normal_response(LimitSwitchController *lim_sw_ctrl);
+void terminal_response(LimitSwitchController *lim_sw_ctrl);
+void device_response(LimitSwitchController *lim_sw_ctrl);
 
 #endif //__COMMUNICATION_H

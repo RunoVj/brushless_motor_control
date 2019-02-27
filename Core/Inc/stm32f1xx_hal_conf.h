@@ -63,7 +63,7 @@
 /*#define HAL_I2C_MODULE_ENABLED   */
 /*#define HAL_I2S_MODULE_ENABLED   */
 /*#define HAL_IRDA_MODULE_ENABLED   */
-#define HAL_IWDG_MODULE_ENABLED
+/*#define HAL_IWDG_MODULE_ENABLED   */
 /*#define HAL_NOR_MODULE_ENABLED   */
 /*#define HAL_NAND_MODULE_ENABLED   */
 /*#define HAL_PCCARD_MODULE_ENABLED   */
@@ -78,7 +78,7 @@
 /*#define HAL_SMARTCARD_MODULE_ENABLED   */
 /*#define HAL_SPI_MODULE_ENABLED   */
 /*#define HAL_SRAM_MODULE_ENABLED   */
-#define HAL_TIM_MODULE_ENABLED
+/*#define HAL_TIM_MODULE_ENABLED   */
 #define HAL_UART_MODULE_ENABLED
 /*#define HAL_USART_MODULE_ENABLED   */
 /*#define HAL_WWDG_MODULE_ENABLED   */
@@ -143,7 +143,7 @@
   * @brief This is the HAL system configuration section
   */     
 #define  VDD_VALUE                    ((uint32_t)3300) /*!< Value of VDD in mv */           
-#define  TICK_INT_PRIORITY            ((uint32_t)2)    /*!< tick interrupt priority (lowest by default)  */            
+#define  TICK_INT_PRIORITY            ((uint32_t)0)    /*!< tick interrupt priority (lowest by default)  */            
 #define  USE_RTOS                     0
 #define  PREFETCH_ENABLE              1
 

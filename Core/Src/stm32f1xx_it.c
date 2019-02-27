@@ -38,7 +38,6 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "iwdg.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -68,7 +67,7 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#include "brushless_motor.h"
+#include "limit_switch_controller.h"
 #include "messages.h"
 #include "communication.h"
 #include "usart.h"
@@ -87,7 +86,6 @@ bool package_started = true; //to start receiving
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern TIM_HandleTypeDef htim4;
 extern DMA_HandleTypeDef hdma_usart1_tx;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
@@ -228,15 +226,17 @@ void SysTick_Handler(void)
 			communication_counter = 0;
 			if (uart1_package_received) {
 				// reset watchdog
-				HAL_IWDG_Refresh(&hiwdg);
 				uart1_package_received = false;   
-				bool parsing_is_ok = parse_package(&BLDC, uart_receive_buf, uart_pack_size);
+				bool parsing_is_ok = parse_package(&lim_sw_ctrl, uart_receive_buf, uart_pack_size);
 				if (uart1_package_sended && parsing_is_ok) {
 					if (uart_receive_buf[1] == NORMAL_REQUEST_TYPE) {
-						normal_response(&BLDC); 
+						normal_response(&lim_sw_ctrl); 
+					}
+					else if (uart_receive_buf[1] == DEVICE_REQUEST_TYPE) {
+						device_response(&lim_sw_ctrl);
 					}
 					else /*if (uart_receive_buf[1] == TERMINAL_REQUEST_TYPE)*/ {
-						terminal_response(&BLDC);
+						terminal_response(&lim_sw_ctrl);
 					}
 				}          
 			}
@@ -263,45 +263,17 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles EXTI line1 interrupt.
+  * @brief This function handles EXTI line0 interrupt.
   */
-void EXTI1_IRQHandler(void)
+void EXTI0_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI1_IRQn 0 */
+  /* USER CODE BEGIN EXTI0_IRQn 0 */
 
-  /* USER CODE END EXTI1_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
-  /* USER CODE BEGIN EXTI1_IRQn 1 */
-
-  /* USER CODE END EXTI1_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI line2 interrupt.
-  */
-void EXTI2_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI2_IRQn 0 */
-
-  /* USER CODE END EXTI2_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
-  /* USER CODE BEGIN EXTI2_IRQn 1 */
-
-  /* USER CODE END EXTI2_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI line3 interrupt.
-  */
-void EXTI3_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI3_IRQn 0 */
-
-  /* USER CODE END EXTI3_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
-  /* USER CODE BEGIN EXTI3_IRQn 1 */
-
-  /* USER CODE END EXTI3_IRQn 1 */
+  /* USER CODE END EXTI0_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+  /* USER CODE BEGIN EXTI0_IRQn 1 */
+  update_lim_sw_states(&lim_sw_ctrl);
+  /* USER CODE END EXTI0_IRQn 1 */
 }
 
 /**
@@ -319,17 +291,18 @@ void DMA1_Channel4_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles TIM4 global interrupt.
+  * @brief This function handles EXTI line[9:5] interrupts.
   */
-void TIM4_IRQHandler(void)
+void EXTI9_5_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM4_IRQn 0 */
+  /* USER CODE BEGIN EXTI9_5_IRQn 0 */
 
-  /* USER CODE END TIM4_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim4);
-  /* USER CODE BEGIN TIM4_IRQn 1 */
+  /* USER CODE END EXTI9_5_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
+  /* USER CODE BEGIN EXTI9_5_IRQn 1 */
+	update_lim_sw_states(&lim_sw_ctrl);
 
-  /* USER CODE END TIM4_IRQn 1 */
+  /* USER CODE END EXTI9_5_IRQn 1 */
 }
 
 /**
@@ -364,6 +337,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			
 			case CONFIG_REQUEST_TYPE:
 				uart_pack_size = CONFIG_REQUEST_LENGTH;
+			break;
+			
+			case DEVICE_REQUEST_TYPE:
+				uart_pack_size = DEVICES_REQUEST_LENGTH;
 			break;
 		}
 	}

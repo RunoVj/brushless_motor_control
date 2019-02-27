@@ -78,21 +78,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define SENSOR_C_Pin GPIO_PIN_1
-#define SENSOR_C_GPIO_Port GPIOA
-#define SENSOR_C_EXTI_IRQn EXTI1_IRQn
-#define SENSOR_B_Pin GPIO_PIN_2
-#define SENSOR_B_GPIO_Port GPIOA
-#define SENSOR_B_EXTI_IRQn EXTI2_IRQn
-#define SENSOR_A_Pin GPIO_PIN_3
-#define SENSOR_A_GPIO_Port GPIOA
-#define SENSOR_A_EXTI_IRQn EXTI3_IRQn
 #define RS485_DIR_Pin GPIO_PIN_5
 #define RS485_DIR_GPIO_Port GPIOA
-#define PWM_Pin GPIO_PIN_6
-#define PWM_GPIO_Port GPIOA
-#define ENABLE_Pin GPIO_PIN_15
-#define ENABLE_GPIO_Port GPIOB
+#define LIMIT_SWITCH1_Pin GPIO_PIN_6
+#define LIMIT_SWITCH1_GPIO_Port GPIOA
+#define LIMIT_SWITCH1_EXTI_IRQn EXTI9_5_IRQn
+#define LIMIT_SWITCH2_Pin GPIO_PIN_0
+#define LIMIT_SWITCH2_GPIO_Port GPIOB
+#define LIMIT_SWITCH2_EXTI_IRQn EXTI0_IRQn
 #define DEBUG_LED_Pin GPIO_PIN_15
 #define DEBUG_LED_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
