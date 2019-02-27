@@ -116,6 +116,7 @@ int main(void)
 	
 	HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
 	FLASH_ReadSettings(&lim_sw_ctrl);
+//	lim_sw_ctrl.address = 0x05;
   update_lim_sw_states(&lim_sw_ctrl);
   /* USER CODE END 2 */
 

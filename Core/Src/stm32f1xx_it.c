@@ -235,7 +235,7 @@ void SysTick_Handler(void)
 					else if (uart_receive_buf[1] == DEVICE_REQUEST_TYPE) {
 						device_response(&lim_sw_ctrl);
 					}
-					else /*if (uart_receive_buf[1] == TERMINAL_REQUEST_TYPE)*/ {
+					else if (uart_receive_buf[1] == TERMINAL_REQUEST_TYPE) {
 						terminal_response(&lim_sw_ctrl);
 					}
 				}          
