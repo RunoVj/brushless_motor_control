@@ -87,6 +87,10 @@ void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
   HAL_TIM_MspPostInit(&htim3);
 
 }
@@ -161,13 +165,20 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
   /* USER CODE END TIM3_MspPostInit 0 */
   
     __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     /**TIM3 GPIO Configuration    
-    PA6     ------> TIM3_CH1 
+    PA6     ------> TIM3_CH1
+    PB0     ------> TIM3_CH3 
     */
-    GPIO_InitStruct.Pin = PWM_Pin;
+    GPIO_InitStruct.Pin = PWM_OLD_BOARD_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(PWM_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(PWM_OLD_BOARD_GPIO_Port, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = PWM_NEW_BOARD_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(PWM_NEW_BOARD_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN TIM3_MspPostInit 1 */
 

@@ -89,8 +89,10 @@ void Error_Handler(void);
 #define SENSOR_A_EXTI_IRQn EXTI3_IRQn
 #define RS485_DIR_Pin GPIO_PIN_5
 #define RS485_DIR_GPIO_Port GPIOA
-#define PWM_Pin GPIO_PIN_6
-#define PWM_GPIO_Port GPIOA
+#define PWM_OLD_BOARD_Pin GPIO_PIN_6
+#define PWM_OLD_BOARD_GPIO_Port GPIOA
+#define PWM_NEW_BOARD_Pin GPIO_PIN_0
+#define PWM_NEW_BOARD_GPIO_Port GPIOB
 #define ENABLE_Pin GPIO_PIN_15
 #define ENABLE_GPIO_Port GPIOB
 #define DEBUG_LED_Pin GPIO_PIN_15

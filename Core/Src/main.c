@@ -120,6 +120,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
 	HAL_GPIO_WritePin(RS485_DIR_GPIO_Port, RS485_DIR_Pin, GPIO_PIN_RESET);
 	FLASH_ReadSettings(&BLDC);
   init(&BLDC);
